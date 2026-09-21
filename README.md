@@ -15,8 +15,6 @@
 
 <a href="docs/screenshots/hero.png"><img src="docs/screenshots/hero.png" alt="Monero Web Wallet dashboard: total and unlocked balance, sync progress against the network, node status and recent activity" width="100%"></a>
 
-<sub><i>Dashboard of a freshly created demo wallet (no funds): total and unlocked balance, wallet vs. network height, node status and recent activity. Click to open full size.</i></sub>
-
 </div>
 
 ---
@@ -508,7 +506,7 @@ non-refundable.
 ```
 
 <sub>Scan the QR code with any Monero wallet, or copy the address above.<br>
-Send **XMR on mainnet only** — funds sent on another network or asset cannot be recovered.</sub>
+Send <b>XMR on mainnet only</b> — funds sent on another network or asset cannot be recovered.</sub>
 
 </div>
 
@@ -538,15 +536,6 @@ Monero Project under their own license and are not included in this repository.
 
 ---
 
-<div align="center">
-<sub>
+**Keywords:** monero web wallet · monero-wallet-rpc GUI · self-hosted Monero wallet · Monero wallet for Windows · XMR wallet UI · non-custodial Monero wallet · Monero privacy wallet · React Monero wallet · local Monero node wallet · monero-wallet-rpc JSON-RPC
 
-**Keywords:** monero web wallet · monero-wallet-rpc GUI · self-hosted Monero wallet ·
-Monero wallet for Windows · XMR wallet UI · non-custodial Monero wallet · Monero privacy
-wallet · React Monero wallet · local Monero node wallet · monero-wallet-rpc JSON-RPC
-
-Not affiliated with or endorsed by the Monero Project. Use at your own risk — always keep
-an offline backup of your recovery phrase.
-
-</sub>
-</div>
+*Not affiliated with or endorsed by the Monero Project. Use at your own risk — always keep an offline backup of your recovery phrase.*
