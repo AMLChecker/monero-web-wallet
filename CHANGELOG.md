@@ -7,6 +7,30 @@ project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [1.0.4] - 2026-09-22
+
+### Added
+
+- **Confirmations you can see.** The transaction details and every history row now draw the ten
+  blocks a payment needs before its outputs become spendable again: a ten-segment meter that fills
+  as the chain confirms the transfer, next to `n / 10`, the remaining blocks and a rough estimate
+  (`6 blocks, ≈ 12 min`).
+
+### Fixed
+
+- A transfer to your own address is no longer printed as `-0.000000 XMR`. `monero-wallet-rpc`
+  reports an amount of 0 for it, because every output stayed inside the wallet; the UI now says so
+  outright — "This went to your own address — the funds stayed in this wallet" with the fee that
+  actually left ("Only the network fee left your balance: 0.0000444 XMR"), and the history row
+  reads **Self-transfer**.
+
+### Changed
+
+- The launchers (`Start.bat`, `start.sh`) install the frontend npm packages only when the UI really
+  has to be built. The release package ships a prebuilt `frontend/dist` and a compiled
+  `backend/dist` (plus `backend/node_modules` in the full download), so `Start.bat` starts the
+  wallet without running npm at all.
+
 ## [1.0.3] - 2026-09-22
 
 ### Fixed
@@ -89,7 +113,8 @@ project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   password check, and a responsive dark interface driven by the official
   `monero-wallet-rpc`. Windows one-click launcher (`Start.bat` / `Stop.bat`).
 
-[Unreleased]: https://github.com/AMLChecker/monero-web-wallet/compare/v1.0.3...HEAD
+[Unreleased]: https://github.com/AMLChecker/monero-web-wallet/compare/v1.0.4...HEAD
+[1.0.4]: https://github.com/AMLChecker/monero-web-wallet/compare/v1.0.3...v1.0.4
 [1.0.3]: https://github.com/AMLChecker/monero-web-wallet/compare/v1.0.2...v1.0.3
 [1.0.2]: https://github.com/AMLChecker/monero-web-wallet/compare/v1.0.1...v1.0.2
 [1.0.1]: https://github.com/AMLChecker/monero-web-wallet/compare/v1.0.0...v1.0.1

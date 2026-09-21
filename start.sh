@@ -117,7 +117,14 @@ if [ ! -d "$ROOT/backend/node_modules" ]; then
   say "[Setup] Installing backend dependencies - this can take a minute..."
   (cd "$ROOT/backend" && npm install --no-audit --no-fund)
 fi
-if [ ! -d "$ROOT/frontend/node_modules" ]; then
+# The frontend packages are only needed to build the UI. A release ships a prebuilt
+# frontend/dist which the backend serves, so npm is not touched at all in that case.
+NEED_FRONTEND_DEPS=0
+if [ ! -d "$ROOT/frontend/node_modules" ]; then NEED_FRONTEND_DEPS=1; fi
+if [ "$REBUILD" -eq 1 ]; then NEED_FRONTEND_DEPS=1; fi
+if [ "$DEVMODE" -eq 1 ]; then NEED_FRONTEND_DEPS=1; fi
+if [ ! -f "$ROOT/frontend/dist/index.html" ]; then NEED_FRONTEND_DEPS=1; fi
+if [ "$NEED_FRONTEND_DEPS" -eq 1 ]; then
   say "[Setup] Installing frontend dependencies - this can take a minute..."
   (cd "$ROOT/frontend" && npm install --no-audit --no-fund)
 fi

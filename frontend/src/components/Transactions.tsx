@@ -21,10 +21,62 @@ import {
 import { useToast } from './Toast';
 import { CopyButton, EmptyState, KeyValue, Modal } from './ui';
 
+/** Monero makes a transaction spendable ten blocks after the one that mined it. */
+const SPENDABLE_AFTER = 10;
+/** Rough block time, used only for the "≈ n min" hint. */
+const MINUTES_PER_BLOCK = 2;
+
 export function txTitle(tx: TxRecord): string {
   if (tx.failed) return 'Failed';
   if (tx.pending) return 'Pending';
   return tx.direction === 'received' ? 'Received' : 'Sent';
+}
+
+/**
+ * A transfer to your own address looks like nothing happened: every output belongs to
+ * this wallet, so monero-wallet-rpc reports an amount of 0 for it and the only money
+ * that actually left is the fee. Say that instead of printing "-0.000000 XMR".
+ */
+export function isSelfTransfer(tx: TxRecord): boolean {
+  if (tx.direction !== 'sent') return false;
+  const amount = tx.amountAtomic.trim();
+  return amount === '' || amount === '0' || /^0+$/.test(amount);
+}
+
+export function confirmationsOf(tx: TxRecord): number {
+  return Math.max(0, Math.min(SPENDABLE_AFTER, tx.confirmations ?? 0));
+}
+
+/** The ten blocks a transaction needs before its outputs can be spent again. */
+export function ConfirmationsMeter({
+  count,
+  locked,
+  compact = false,
+  className = '',
+}: {
+  count: number;
+  locked: boolean;
+  compact?: boolean;
+  className?: string;
+}) {
+  const filled = Math.max(0, Math.min(SPENDABLE_AFTER, count));
+  const tone = filled >= SPENDABLE_AFTER ? 'bg-ok' : locked ? 'bg-warn' : 'bg-accent';
+  return (
+    <span
+      className={`inline-flex items-center ${compact ? 'gap-[3px]' : 'gap-1'} ${className}`}
+      role="img"
+      aria-label={`${filled} of ${SPENDABLE_AFTER} confirmations`}
+    >
+      {Array.from({ length: SPENDABLE_AFTER }, (_, index) => (
+        <span
+          key={index}
+          className={`rounded-full ${compact ? 'h-1.5 w-1.5' : 'h-1.5 w-3'} ${
+            index < filled ? tone : 'bg-white/[0.12]'
+          }`}
+        />
+      ))}
+    </span>
+  );
 }
 
 function TxBadge({ tx }: { tx: TxRecord }) {
@@ -46,6 +98,9 @@ function TxBadge({ tx }: { tx: TxRecord }) {
 }
 
 export function TxAmount({ tx }: { tx: TxRecord }) {
+  if (isSelfTransfer(tx)) {
+    return <span className="text-[12.5px] font-medium text-ink-muted">Self-transfer</span>;
+  }
   const sign = tx.direction === 'received' ? '+' : '-';
   const color = tx.failed ? 'text-ink-faint line-through' : tx.direction === 'received' ? 'text-ok' : 'text-ink';
   return (
@@ -72,7 +127,8 @@ export function TxRow({ tx, onSelect }: { tx: TxRecord; onSelect: (tx: TxRecord)
           <span className="num">{formatDateTime(tx.timestamp)}</span>
           <span className="inline-flex items-center gap-1.5">
             {tx.locked ? <Lock className="h-3.5 w-3.5 text-warn/80" /> : <Unlock className="h-3.5 w-3.5 text-ink-faint" />}
-            <span className="num">{tx.confirmations ?? 0} conf.</span>
+            <span className="num">{confirmationsOf(tx)}/{SPENDABLE_AFTER}</span>
+            <ConfirmationsMeter count={confirmationsOf(tx)} locked={tx.locked} compact />
           </span>
         </div>
         <div className="mt-1.5 flex items-center justify-between gap-3">
@@ -97,7 +153,12 @@ export function TxRow({ tx, onSelect }: { tx: TxRecord; onSelect: (tx: TxRecord)
         </div>
         <div className="flex items-center justify-end gap-1.5 text-[11.5px] text-ink-dim">
           {tx.locked ? <Lock className="h-3.5 w-3.5 text-warn/80" /> : <Unlock className="h-3.5 w-3.5 text-ink-faint" />}
-          <span className="num">{tx.confirmations ?? 0} conf.</span>
+          <span className="flex flex-col items-end gap-1">
+            <span className="num">
+              {confirmationsOf(tx)}/{SPENDABLE_AFTER}
+            </span>
+            <ConfirmationsMeter count={confirmationsOf(tx)} locked={tx.locked} compact />
+          </span>
         </div>
         <div className="flex items-center justify-end">
           <span className="font-mono text-[11.5px] text-ink-muted">{shortenTxid(tx.txid)}</span>
@@ -138,6 +199,10 @@ export function TxDetailsModal({ tx, onClose }: { tx: TxRecord | null; onClose: 
     push({ title: ok ? 'Transaction id copied' : 'Could not copy', tone: ok ? 'success' : 'error' });
   };
 
+  const selfTransfer = isSelfTransfer(tx);
+  const confirmations = confirmationsOf(tx);
+  const blocksLeft = Math.max(0, SPENDABLE_AFTER - confirmations);
+
   return (
     <Modal
       open={Boolean(tx)}
@@ -148,19 +213,34 @@ export function TxDetailsModal({ tx, onClose }: { tx: TxRecord | null; onClose: 
       footer={<CopyButton value={tx.txid} label="Copy transaction id" />}
     >
       <div className="mb-4 rounded-xl border border-line bg-surface-sunken px-4 py-3 text-center">
-        <p className="label-caps">Amount</p>
-        <p
-          className={`num mt-1 break-all text-[20px] font-semibold sm:text-[24px] ${
-            tx.direction === 'received' ? 'text-ok' : 'text-ink'
-          }`}
-        >
-          {tx.direction === 'received' ? '+' : '-'}
-          {formatXmr(tx.amountAtomic)}{' '}
-          <span className="text-[13px] font-normal text-ink-dim">XMR</span>
-        </p>
-        {tx.feeAtomic && tx.direction === 'sent' ? (
-          <p className="num mt-1 text-[11.5px] text-ink-dim">Network fee {formatXmr(tx.feeAtomic)} XMR</p>
-        ) : null}
+        <p className="label-caps">{selfTransfer ? 'Self-transfer' : 'Amount'}</p>
+        {selfTransfer ? (
+          <>
+            <p className="mt-1 text-[15px] font-semibold text-ink sm:text-[16px]">
+              This went to your own address — the funds stayed in this wallet
+            </p>
+            <p className="num mt-1 text-[11.5px] text-ink-dim">
+              {tx.feeAtomic
+                ? `Only the network fee left your balance: ${formatXmr(tx.feeAtomic)} XMR`
+                : 'Only the network fee left your balance.'}
+            </p>
+          </>
+        ) : (
+          <>
+            <p
+              className={`num mt-1 break-all text-[20px] font-semibold sm:text-[24px] ${
+                tx.direction === 'received' ? 'text-ok' : 'text-ink'
+              }`}
+            >
+              {tx.direction === 'received' ? '+' : '-'}
+              {formatXmr(tx.amountAtomic)}{' '}
+              <span className="text-[13px] font-normal text-ink-dim">XMR</span>
+            </p>
+            {tx.feeAtomic && tx.direction === 'sent' ? (
+              <p className="num mt-1 text-[11.5px] text-ink-dim">Network fee {formatXmr(tx.feeAtomic)} XMR</p>
+            ) : null}
+          </>
+        )}
       </div>
 
       <div className="divide-y divide-line-soft">
@@ -170,7 +250,13 @@ export function TxDetailsModal({ tx, onClose }: { tx: TxRecord | null; onClose: 
           </span>
         </KeyValue>
         <KeyValue label="Confirmations">
-          <span className="num">{tx.confirmations ?? 0}</span>
+          <span className="flex w-full flex-col items-start gap-2 sm:items-end">
+            <span className="num">
+              {confirmations} / {SPENDABLE_AFTER}
+              {confirmations >= SPENDABLE_AFTER ? '' : tx.locked ? ' — locked' : ''}
+            </span>
+            <ConfirmationsMeter count={confirmations} locked={tx.locked} />
+          </span>
         </KeyValue>
         <KeyValue label="Block height">
           <span className="num">{tx.height ?? 'in pool'}</span>
@@ -199,7 +285,10 @@ export function TxDetailsModal({ tx, onClose }: { tx: TxRecord | null; onClose: 
         ) : null}
         <KeyValue label="Unlock">
           {tx.locked ? (
-            <span className="text-warn">Locked — spendable after about 10 confirmations</span>
+            <span className="text-warn">
+              Locked — spendable after about {SPENDABLE_AFTER} confirmations
+              {blocksLeft > 0 ? ` (${blocksLeft} block${blocksLeft === 1 ? '' : 's'}, ≈ ${blocksLeft * MINUTES_PER_BLOCK} min)` : ''}
+            </span>
           ) : (
             <span className="text-ok">Spendable</span>
           )}
