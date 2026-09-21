@@ -82,6 +82,23 @@ say "=========================================================="
 say ""
 
 # --- 1. requirements ---------------------------------------------------------
+# Node.js and the Monero binaries are prepared automatically: whatever is missing is
+# fetched from nodejs.org / getmonero.org and checked against the published checksums
+# before anything is unpacked or executed.
+if [ ! -f "$ROOT/scripts/ensure-deps.sh" ]; then
+  fail "scripts/ensure-deps.sh is missing - unpack the release archive again."
+fi
+say "[Setup] Checking the prerequisites (Node.js, Monero binaries)..."
+if ! bash "$ROOT/scripts/ensure-deps.sh"; then
+  fail "The prerequisites could not be prepared automatically.
+        Check the internet connection, or install Node.js 18+ from https://nodejs.org
+        and put the Monero binaries from https://www.getmonero.org/downloads/ next to start.sh."
+fi
+if [ -f "$ROOT/.run/node-dir.txt" ]; then
+  PATH="$(cat "$ROOT/.run/node-dir.txt"):$PATH"
+  export PATH
+fi
+
 RPC_BIN=""
 # The .exe name is checked first on purpose: in Git Bash/MSYS a bare name also
 # matches "monero-wallet-rpc.exe", but the extension-less path cannot be executed.
@@ -93,7 +110,7 @@ if [ -z "$RPC_BIN" ]; then
         Download the official Monero binaries from https://www.getmonero.org/downloads/
         and put monero-wallet-rpc next to start.sh."
 fi
-command -v node >/dev/null 2>&1 || fail "Node.js was not found in PATH. Install Node.js 18 or newer from https://nodejs.org."
+command -v node >/dev/null 2>&1 || fail "Node.js is still not available. Install Node.js 18 or newer from https://nodejs.org."
 
 NODE_MAJOR="$(node -p 'process.versions.node.split(".")[0]')"
 if [ "$NODE_MAJOR" -lt 18 ]; then
