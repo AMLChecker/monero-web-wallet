@@ -542,6 +542,15 @@ review dialog that shows the exact fee and total. That is intentional.
 </details>
 
 <details>
+<summary><b>Can I pick a different transaction priority?</b></summary>
+
+No — the wallet always sends at <b>Low</b>, the cheapest fee the network accepts, so a
+transfer can take a little longer to confirm. Paying more never made a Monero transaction
+private, and it is the kind of switch most people are not equipped to judge. The HTTP API
+still accepts `priority` from `0` to `3` if you build on top of it.
+</details>
+
+<details>
 <summary><b>Does the wallet show a fiat price?</b></summary>
 
 Only if you ask it to. Settings → <b>Price</b> offers USDT via Kraken (XMR/USDT), USD via
