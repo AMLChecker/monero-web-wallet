@@ -7,6 +7,8 @@ project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [1.0.2] - 2026-09-21
+
 ### Changed
 
 - The send form no longer shows any transaction priority control: every transfer goes out at
@@ -24,6 +26,12 @@ project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Support for the project on the Send page: a **0.5%** tip is preselected (`Off` and `1%` are
   one tap away), and the exact support amount plus the destination address are listed in the
   confirmation dialog before signing. The address is configurable through `SUPPORT_ADDRESS`.
+
+### Fixed
+
+- Settings → **About** claimed "Price API: not configured — USD values hidden" no matter what the
+  price source actually was. It now reports the truth: the configured source, its pair and the
+  current rate, an explicit error when the API cannot be reached, or that the price API is off.
 
 ## [1.0.1] - 2026-09-21
 
@@ -65,6 +73,7 @@ project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   password check, and a responsive dark interface driven by the official
   `monero-wallet-rpc`. Windows one-click launcher (`Start.bat` / `Stop.bat`).
 
-[Unreleased]: https://github.com/AMLChecker/monero-web-wallet/compare/v1.0.1...HEAD
+[Unreleased]: https://github.com/AMLChecker/monero-web-wallet/compare/v1.0.2...HEAD
+[1.0.2]: https://github.com/AMLChecker/monero-web-wallet/compare/v1.0.1...v1.0.2
 [1.0.1]: https://github.com/AMLChecker/monero-web-wallet/compare/v1.0.0...v1.0.1
 [1.0.0]: https://github.com/AMLChecker/monero-web-wallet/releases/tag/v1.0.0

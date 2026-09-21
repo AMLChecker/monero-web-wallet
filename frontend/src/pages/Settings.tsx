@@ -327,7 +327,18 @@ export function SettingsPage({ onLock, locking }: { onLock: () => void; locking:
             <span className="mono-address block max-w-[320px] text-right text-ink-muted">{info?.app.walletDir ?? '—'}</span>
           </KeyValue>
           <KeyValue label="Price API">
-            <span>not configured — USD values hidden</span>
+            {!info?.price.enabled ? (
+              <span>off — the wallet makes no price requests</span>
+            ) : info.price.error ? (
+              <span className="text-warn">
+                {info.price.label}: {info.price.error}
+              </span>
+            ) : (
+              <span>
+                {info.price.label} · {info.price.pair}
+                {info.price.value ? ` · ${info.price.value} ${info.price.pair.split('/')[1] ?? ''}` : ''}
+              </span>
+            )}
           </KeyValue>
         </div>
       </Card>
