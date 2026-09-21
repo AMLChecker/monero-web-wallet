@@ -40,7 +40,14 @@ export function SupportPage({ onNavigate }: { onNavigate: (route: Route) => void
         if (active) setSupport(result);
       })
       .catch((caught) => {
-        if (active) setLoadError((caught as ApiError).message);
+        if (!active) return;
+        const apiError = caught as ApiError;
+        // A backend started before this page existed has no /api/support route yet.
+        setLoadError(
+          apiError.status === 404
+            ? 'This backend predates the support endpoint — restart the wallet (Stop.bat, then Start.bat) and reload this page.'
+            : apiError.message,
+        );
       });
     return () => {
       active = false;
