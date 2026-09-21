@@ -7,6 +7,23 @@ project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [1.0.8] - 2026-09-22
+
+### Added
+
+- The launchers now say where a wallet file belongs when the wallet directory is empty: *"No wallet
+  files (\*.keys) in …  Put your own wallet file (name + name.keys) next to Start.bat or into the
+  wallets subfolder"*. Previously a fresh folder simply showed an empty welcome screen.
+
+### Docs
+
+- README (English and Russian): a **Where your own wallet file goes** note in the quick start, and a
+  fuller answer in the FAQ. Both spell out that `<name>` + `<name>.keys` dropped next to the launcher
+  or into `wallets/` are found automatically, listed as **Open `<name>`** and opened with the same
+  password as the CLI/GUI, that the files are never moved or modified, and that `MONERO_WALLET_DIR`
+  covers wallets kept elsewhere. Verified end to end — both placements were tested against a real
+  `monero-wallet-rpc`: the wallet is listed and opens.
+
 ## [1.0.7] - 2026-09-22
 
 ### Added
@@ -172,7 +189,8 @@ project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   password check, and a responsive dark interface driven by the official
   `monero-wallet-rpc`. Windows one-click launcher (`Start.bat` / `Stop.bat`).
 
-[Unreleased]: https://github.com/AMLChecker/monero-web-wallet/compare/v1.0.7...HEAD
+[Unreleased]: https://github.com/AMLChecker/monero-web-wallet/compare/v1.0.8...HEAD
+[1.0.8]: https://github.com/AMLChecker/monero-web-wallet/compare/v1.0.7...v1.0.8
 [1.0.7]: https://github.com/AMLChecker/monero-web-wallet/compare/v1.0.6...v1.0.7
 [1.0.6]: https://github.com/AMLChecker/monero-web-wallet/compare/v1.0.5...v1.0.6
 [1.0.5]: https://github.com/AMLChecker/monero-web-wallet/compare/v1.0.4...v1.0.5

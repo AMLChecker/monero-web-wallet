@@ -230,6 +230,15 @@ is in [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 4. Click "Open main" (or "Create New Wallet") and enter your wallet password
 ```
 
+**Where your own wallet file goes**
+
+Drop your wallet files — `<name>` and `<name>.keys`, for example `main` and `main.keys` — either
+next to `Start.bat` or into the `wallets\` subfolder, then start the wallet. The file is found
+automatically and listed on the first screen as **Open `<name>`**; use the same password as in the
+Monero CLI or GUI. Nothing is moved, renamed or copied: that folder is simply passed to
+`monero-wallet-rpc --wallet-dir`. If your wallets live somewhere else, point `MONERO_WALLET_DIR`
+at that folder (see [Configuration](#configuration)).
+
 What the launcher does:
 
 1. prepares its prerequisites through `scripts\ensure-deps.ps1`: Node.js and the Monero
@@ -548,8 +557,10 @@ the Vite/`dist` frontend. Only `Start.bat`/`Stop.bat` are Windows-specific.
 <details>
 <summary><b>Can it open my existing wallet created by the Monero CLI or GUI?</b></summary>
 
-Yes. Put the wallet files in the wallet directory (or set `MONERO_WALLET_DIR`), restart,
-and open the wallet from the welcome screen with its password.
+Yes. Copy `<name>` and `<name>.keys` next to `Start.bat` (or into `wallets/`), start the wallet and
+open it with the password you use in the CLI or GUI — the first screen lists every wallet file it
+can see, as a button per wallet. Wallets that already live somewhere else can be used by pointing
+`MONERO_WALLET_DIR` at their folder. The files are never modified.
 </details>
 
 <details>

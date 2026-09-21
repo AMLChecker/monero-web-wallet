@@ -184,6 +184,11 @@ fi
 
 say "[Check] Daemon address: $NODE_ADDRESS"
 say "[Check] Wallet directory: $WALLET_DIR"
+if ! compgen -G "$WALLET_DIR/*.keys" >/dev/null 2>&1; then
+  say "[Info] No wallet files (*.keys) in $WALLET_DIR"
+  say "       Put your own wallet file (name + name.keys) next to start.sh or into the"
+  say "       wallets subfolder - it appears on the first screen - or create a new wallet there."
+fi
 case "$NODE_ADDRESS" in
   *127.0.0.1*|*localhost*) : ;;
   *)

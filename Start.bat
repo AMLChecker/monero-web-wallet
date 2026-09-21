@@ -219,6 +219,11 @@ if "!NODE_SOURCE!"=="fallback" (
 )
 echo [Check] Daemon address: !NODE_ADDRESS!
 echo [Check] Wallet directory: %WALLET_DIR%
+if not exist "%WALLET_DIR%\*.keys" (
+  echo [Info] No wallet files ^(*.keys^) in %WALLET_DIR%
+  echo        Put your own wallet file ^(name + name.keys^) next to Start.bat or into the
+  echo        wallets subfolder - it appears on the first screen - or create a new wallet there.
+)
 
 echo !NODE_ADDRESS! | findstr /I /C:"127.0.0.1" /C:"localhost" >nul
 if errorlevel 1 (

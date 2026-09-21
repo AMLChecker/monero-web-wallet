@@ -1,6 +1,6 @@
 {
   "name": "monero-web-wallet-backend",
-  "version": "1.0.7",
+  "version": "1.0.8",
   "private": true,
   "description": "Local backend that proxies a Monero web wallet UI to monero-wallet-rpc",
   "main": "dist/server.js",
