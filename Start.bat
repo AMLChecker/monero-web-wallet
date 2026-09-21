@@ -52,23 +52,43 @@ echo.
 REM ---------------------------------------------------------------
 REM 1. checks
 REM ---------------------------------------------------------------
+REM Node.js and the Monero binaries are prepared automatically: whatever is missing
+REM is fetched from nodejs.org / getmonero.org and checked against the published
+REM checksums before anything is unpacked. Nothing is executed before that check.
+if not exist "%ROOT%\scripts\ensure-deps.ps1" (
+  echo [Error] scripts\ensure-deps.ps1 is missing - unpack the release archive again.
+  goto :fail
+)
+echo [Setup] Checking the prerequisites (Node.js, Monero binaries)...
+powershell -NoProfile -ExecutionPolicy Bypass -File "%ROOT%\scripts\ensure-deps.ps1" -Root "%ROOT%"
+if errorlevel 1 (
+  echo [Error] The prerequisites could not be prepared automatically.
+  echo         Check the internet connection, or install Node.js 18+ from https://nodejs.org
+  echo         and put the Monero binaries from https://www.getmonero.org/downloads/ next to Start.bat.
+  goto :fail
+)
+
+REM A portable Node.js copy lives in .run\node-dir.txt when one had to be installed.
+if exist "%ROOT%\.run\node-dir.txt" (
+  for /f "usebackq delims=" %%p in ("%ROOT%\.run\node-dir.txt") do set "NODE_DIR=%%p"
+  if defined NODE_DIR set "PATH=!NODE_DIR!;!PATH!"
+)
+
+where node >nul 2>nul
+if errorlevel 1 (
+  echo [Error] Node.js is still not available.
+  echo         Install Node.js 18 or newer from https://nodejs.org and run Start.bat again.
+  goto :fail
+)
 if not exist "%ROOT%\monero-wallet-rpc.exe" (
   echo [Error] monero-wallet-rpc.exe was not found in:
   echo         %ROOT%
-  echo         Put the official Monero Windows binaries next to Start.bat.
   echo         Windows Defender sometimes quarantines the official Monero binaries:
   echo         check Windows Security - Protection history, restore the file and add
   echo         this folder to Exclusions. This wallet never mines anything.
   goto :fail
 )
 echo [Check] monero-wallet-rpc.exe found
-
-where node >nul 2>nul
-if errorlevel 1 (
-  echo [Error] Node.js was not found in PATH.
-  echo         Install Node.js 18 or newer from https://nodejs.org and run Start.bat again.
-  goto :fail
-)
 for /f "delims=" %%v in ('node -v 2^>nul') do set "NODE_VERSION=%%v"
 echo [Check] Node.js !NODE_VERSION! found
 

@@ -7,6 +7,30 @@ project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [1.0.6] - 2026-09-22
+
+### Added
+
+- **The launcher installs what is missing.** `Start.bat` (and `start.sh`) now call
+  `scripts/ensure-deps.ps1` / `scripts/ensure-deps.sh` before doing anything else:
+
+  - **Node.js** — taken from `PATH`, from a portable copy inside the folder, installed with
+    winget, or downloaded as the official portable build from nodejs.org into `node/`. The
+    download is verified against the published `SHASUMS256.txt` before it is unpacked.
+  - **Monero binaries** — when `monero-wallet-rpc.exe`, `monerod.exe` or
+    `monero-wallet-cli.exe` are missing, the official CLI archive is downloaded from
+    getmonero.org and verified against the published `hashes.txt` before the three binaries
+    are copied in. On Windows Defender interference the message names the exact fix
+    (Protection history + Exclusions).
+
+  Nothing is executed before its checksum matches, and the launcher still prints the manual
+  links if a download is impossible (no internet, blocked host).
+
+### Changed
+
+- `Start.bat`/`start.sh` no longer stop with "install Node.js yourself" / "put the Monero
+  binaries next to Start.bat": that is what they now do themselves.
+
 ## [1.0.5] - 2026-09-22
 
 ### Changed
@@ -126,7 +150,8 @@ project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   password check, and a responsive dark interface driven by the official
   `monero-wallet-rpc`. Windows one-click launcher (`Start.bat` / `Stop.bat`).
 
-[Unreleased]: https://github.com/AMLChecker/monero-web-wallet/compare/v1.0.5...HEAD
+[Unreleased]: https://github.com/AMLChecker/monero-web-wallet/compare/v1.0.6...HEAD
+[1.0.6]: https://github.com/AMLChecker/monero-web-wallet/compare/v1.0.5...v1.0.6
 [1.0.5]: https://github.com/AMLChecker/monero-web-wallet/compare/v1.0.4...v1.0.5
 [1.0.4]: https://github.com/AMLChecker/monero-web-wallet/compare/v1.0.3...v1.0.4
 [1.0.3]: https://github.com/AMLChecker/monero-web-wallet/compare/v1.0.2...v1.0.3

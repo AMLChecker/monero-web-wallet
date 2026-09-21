@@ -70,7 +70,14 @@
 ## Требования
 
 - **Windows 10/11** для запуска через `Start.bat` (backend и фронтенд кроссплатформенные — см. ручную установку).
-- **Node.js 18+**.
+- **Больше ничего ставить вручную не нужно.** Лаунчер сам готовит зависимости: если нет
+  Node.js — поставит его (через winget или официальную портативную сборку с
+  <https://nodejs.org>), если нет бинарников Monero — скачает официальный архив CLI с
+  <https://www.getmonero.org/downloads/>. Каждая загрузка проверяется по хешу, который
+  публикует сам поставщик (`SHASUMS256.txt` для Node.js, `hashes.txt` для Monero), и до
+  успешной проверки ничего не распаковывается и не запускается — см.
+  [scripts/ensure-deps.ps1](scripts/ensure-deps.ps1) и
+  [scripts/ensure-deps.sh](scripts/ensure-deps.sh).
 - **Официальные бинарники Monero** рядом с `Start.bat`: `monero-wallet-rpc.exe`, `monero-wallet-cli.exe`,
   `monerod.exe` — скачать на <https://www.getmonero.org/downloads/>. В репозиторий они не входят, но
   в архиве релиза `monero-web-wallet-<версия>.zip` со
