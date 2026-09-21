@@ -1,0 +1,57 @@
+name: Feature request
+description: Suggest an improvement for the wallet, the backend or the launcher
+title: "[Feature] "
+labels: ['enhancement']
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Please check the roadmap at the end of the [README](https://github.com/AMLChecker/monero-web-wallet#roadmap) first —
+        price display, address book, integrated addresses, multiple accounts, translations, Linux/macOS launchers and
+        hardware-wallet support are already listed there.
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: Checklist
+      options:
+        - label: I searched existing issues and the roadmap for this idea
+          required: true
+    validations:
+      required: true
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem should this solve?
+      description: Describe the workflow or limitation you run into today.
+    validations:
+      required: true
+  - type: textarea
+    id: solution
+    attributes:
+      label: What would you like to see?
+      description: Describe the behaviour or UI you have in mind. Sketches and screenshots are welcome.
+    validations:
+      required: true
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - Wallet UI / design
+        - Sending (fees, priorities, review flow)
+        - Receiving (addresses, subaddresses, QR)
+        - Transactions and history
+        - Node / daemon handling
+        - Security and privacy
+        - Packaging, launcher, portability
+        - Documentation
+        - Other
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives you considered
+      description: Other wallets or tools that solve this, and what you liked about them.
+    validations:
+      required: false
