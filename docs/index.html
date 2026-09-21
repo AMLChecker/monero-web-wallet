@@ -47,6 +47,79 @@
       }
     </script>
 
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "Is this a custodial or hosted wallet?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "No. You run it yourself. There is no service operated by the author that could see your keys, and the local API refuses connections from other machines."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Where are my private keys stored?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "In your own Monero wallet file (the name and name.keys files), exactly as with the official CLI or GUI. The web interface never stores keys."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Do I need a full Monero node?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "No - any reachable daemon works, but running your own monerod is recommended for privacy, because a remote node can see your IP address and request pattern."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Can it open a wallet created by the Monero CLI or GUI?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Yes. Put the wallet files in the wallet directory (or set MONERO_WALLET_DIR), restart, and open the wallet with its password."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Can I pick a different transaction priority?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "No - the wallet always sends at Low, the cheapest fee the network accepts, so a transfer can take a little longer to confirm. The HTTP API still accepts priority from 0 to 3 for integrations."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Does it support hardware wallets?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Not yet - it drives the software wallet RPC only."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Is it audited?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "No. It is a small open-source project: read the code, test with small amounts, and always keep an offline backup of your recovery phrase."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Does it phone home or show the price?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "There is no analytics or telemetry. The balance can optionally be shown in USDT or USD: it is off by default, and when you enable it the backend asks the exchange you selected at most once a minute, sending no wallet data with the request."
+            }
+          }
+        ]
+      }
+    </script>
+
     <style>
       :root {
         --bg: #09090b;
@@ -292,6 +365,10 @@
         <details>
           <summary>Does it support hardware wallets?</summary>
           <p>Not yet — it drives the software wallet RPC only.</p>
+        </details>
+        <details>
+          <summary>Can I pick a different transaction priority?</summary>
+          <p>No — the wallet always sends at <b>Low</b>, the cheapest fee the network accepts, so a transfer can take a little longer to confirm. The HTTP API still accepts <code>priority</code> from <code>0</code> to <code>3</code> for integrations.</p>
         </details>
         <details>
           <summary>Is it audited?</summary>
