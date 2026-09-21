@@ -10,7 +10,7 @@
 
 - Landing page: https://amlchecker.github.io/monero-web-wallet/
 - Repository: https://github.com/AMLChecker/monero-web-wallet
-- Latest release: https://github.com/AMLChecker/monero-web-wallet/releases/tag/v1.0.6
+- Latest release: https://github.com/AMLChecker/monero-web-wallet/releases/tag/v1.0.7
 - Architecture notes: https://github.com/AMLChecker/monero-web-wallet/blob/main/docs/ARCHITECTURE.md
 - Security model: https://github.com/AMLChecker/monero-web-wallet/blob/main/SECURITY.md
 - Contributing: https://github.com/AMLChecker/monero-web-wallet/blob/main/CONTRIBUTING.md

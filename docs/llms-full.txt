@@ -232,7 +232,8 @@ is in [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 
 What the launcher does:
 
-1. checks for `monero-wallet-rpc.exe` and Node.js;
+1. prepares its prerequisites through `scripts\ensure-deps.ps1`: Node.js and the Monero
+   binaries are installed (checksum-verified downloads) if they are missing;
 2. installs npm dependencies in `backend` and `frontend` when they are missing;
 3. builds the backend and the UI when their `dist` folders are missing;
 4. starts `monero-wallet-rpc.exe` on `127.0.0.1:18083` with a fresh random RPC login;
@@ -257,18 +258,33 @@ Services keep running in the background without extra windows; logs go to
 Start.bat              start everything (builds if needed)
 Start.bat --rebuild    force a rebuild of backend and frontend
 Start.bat --dev        run the Vite dev server on 127.0.0.1:5173 (hot reload)
+Start.bat --update-monero   update the Monero binaries to the current official release
+Update-Monero.bat      same, for a double-click; Update-Monero.bat 0.18.5.1 pins a version
 Stop.bat               stop all services (by PID file and by port)
 ```
+
+**Keeping Monero current**
+
+The binaries in the archive are a tested release (0.18.5.1). When the Monero project publishes
+a new one, `Update-Monero.bat` replaces `monero-wallet-rpc`, `monerod` and `monero-wallet-cli`
+in place: it takes the current version from the `downloads.getmonero.org/win64` redirect,
+verifies the archive against the published `hashes.txt`, keeps what it replaced in
+`.backup\monero-<version>\` and prints old → new. Passing a version (`Update-Monero.bat
+0.18.5.1`) works as a rollback. On Linux/macOS the same is `./scripts/update-monero.sh`.
+
+Nothing checks for new releases unless you ask: set `MONERO_CHECK_UPDATES=1` before starting and
+the launcher prints a one-line notice when a newer release exists. The wallet itself keeps
+making no outbound requests of its own.
 
 ## Quick start (Linux and macOS)
 
 ```bash
-# 1. put the official Monero binaries (monero-wallet-rpc, monero-wallet-cli, monerod)
-#    next to start.sh
-./start.sh             # installs/builds what is missing, starts everything, opens the browser
+# 1. nothing to download by hand - start.sh fetches Node.js and the Monero binaries it needs
+./start.sh             # prepares/installs what is missing, starts everything, opens the browser
 ./stop.sh              # stops the services and frees the ports
 ./start.sh --rebuild   # force a rebuild of backend and frontend
 ./start.sh --dev       # run the Vite dev server on 127.0.0.1:5173
+./scripts/update-monero.sh   # update the Monero binaries to the current release
 ```
 
 `start.sh` does exactly what `Start.bat` does: it checks that `monero-wallet-rpc` and

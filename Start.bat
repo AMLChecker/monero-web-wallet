@@ -16,6 +16,7 @@ REM  Usage:
 REM    Start.bat             build if needed, serve the wallet, open it
 REM    Start.bat --rebuild   force a rebuild of backend and frontend
 REM    Start.bat --dev       run the Vite dev server on port 5173 instead
+REM    Start.bat --update-monero  update the Monero binaries to the current release
 REM ===================================================================
 
 set "ROOT=%~dp0"
@@ -36,13 +37,22 @@ if exist "%ROOT%\wallets\*.keys" set "WALLET_DIR=%ROOT%\wallets"
 
 set "REBUILD=0"
 set "DEVMODE=0"
+set "UPDATE_MONERO=0"
 :parseargs
 if "%~1"=="" goto :argsdone
 if /i "%~1"=="--rebuild" set "REBUILD=1"
 if /i "%~1"=="--dev" set "DEVMODE=1"
+if /i "%~1"=="--update-monero" set "UPDATE_MONERO=1"
 shift
 goto :parseargs
 :argsdone
+
+if "%UPDATE_MONERO%"=="1" (
+  powershell -NoProfile -ExecutionPolicy Bypass -File "%ROOT%\scripts\update-monero.ps1" -Root "%ROOT%"
+  echo.
+  pause
+  exit /b 0
+)
 
 echo ==========================================================
 echo   Monero Web Wallet

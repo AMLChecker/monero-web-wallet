@@ -187,6 +187,32 @@ Say "Node.js found: $(& $nodeExe -v)"
 
 if (-not (Resolve-Monero)) { exit 1 }
 
+# Optional, off by default so the wallet never talks to the internet unless it has to:
+# set MONERO_CHECK_UPDATES=1 to be told when the Monero project publishes a new release.
+if ($env:MONERO_CHECK_UPDATES -eq '1') {
+  try {
+    # Not following the redirect is what makes the Location header readable.
+    $head = [System.Net.HttpWebRequest]::Create('https://downloads.getmonero.org/win64')
+    $head.Method = 'HEAD'
+    $head.AllowAutoRedirect = $false
+    $head.Timeout = 30000
+    $response = $head.GetResponse()
+    $location = $response.Headers['Location']
+    $response.Close()
+    $latest = [regex]::Match("$location", 'v(\d+\.\d+\.\d+(?:\.\d+)?)').Groups[1].Value
+    $current = $null
+    $exe = Join-Path $Root 'monero-wallet-rpc.exe'
+    if (Test-Path -LiteralPath $exe) {
+      $current = [regex]::Match((& $exe --version 2>&1 | Out-String), 'v(\d+\.\d+\.\d+(?:\.\d+)?)').Groups[1].Value
+    }
+    if ($latest -and $current -and $latest -ne $current) {
+      Say "A newer Monero release is available: $current -> $latest (run Update-Monero.bat to install it)"
+    }
+  } catch {
+    Say 'Could not check for a newer Monero release.'
+  }
+}
+
 $runDir = Join-Path $Root '.run'
 New-Item -ItemType Directory -Force -Path $runDir | Out-Null
 Set-Content -LiteralPath (Join-Path $runDir 'node-dir.txt') -Value $nodeDir -Encoding ASCII

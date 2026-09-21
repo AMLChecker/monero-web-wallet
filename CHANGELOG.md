@@ -7,6 +7,28 @@ project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [1.0.7] - 2026-09-22
+
+### Added
+
+- **An update path for the Monero binaries.** `Update-Monero.bat` (or `Start.bat
+  --update-monero`, or `scripts/update-monero.sh` on Linux/macOS) replaces
+  `monero-wallet-rpc`, `monerod` and `monero-wallet-cli` with the current official release:
+  it reads the latest version from the `downloads.getmonero.org/win64` redirect, downloads the
+  archive, verifies it against the `hashes.txt` the Monero project publishes, keeps the
+  binaries it replaces in `.backup\monero-<version>\` and reports old → new. A specific
+  version can be requested — `Update-Monero.bat 0.18.5.1` — which doubles as a rollback.
+- Optional update notice, **off by default**: with `MONERO_CHECK_UPDATES=1` the launcher tells
+  you when the Monero project publishes a newer release. The wallet keeps making no outbound
+  request of its own unless you ask for one.
+
+### Changed
+
+- The automatic download (for a source clone without the binaries) stays pinned to the tested
+  **0.18.5.1** so a fresh install is deterministic; moving to a newer release is an explicit
+  action, because an RPC contract change would otherwise arrive mid-session — the `tx_metadata`
+  bug fixed in 1.0.3 is exactly that kind of surprise.
+
 ## [1.0.6] - 2026-09-22
 
 ### Added
@@ -150,7 +172,8 @@ project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   password check, and a responsive dark interface driven by the official
   `monero-wallet-rpc`. Windows one-click launcher (`Start.bat` / `Stop.bat`).
 
-[Unreleased]: https://github.com/AMLChecker/monero-web-wallet/compare/v1.0.6...HEAD
+[Unreleased]: https://github.com/AMLChecker/monero-web-wallet/compare/v1.0.7...HEAD
+[1.0.7]: https://github.com/AMLChecker/monero-web-wallet/compare/v1.0.6...v1.0.7
 [1.0.6]: https://github.com/AMLChecker/monero-web-wallet/compare/v1.0.5...v1.0.6
 [1.0.5]: https://github.com/AMLChecker/monero-web-wallet/compare/v1.0.4...v1.0.5
 [1.0.4]: https://github.com/AMLChecker/monero-web-wallet/compare/v1.0.3...v1.0.4
