@@ -7,6 +7,14 @@ project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Changed
+
+- Network priority is fixed to **Low** (the cheapest fee the network accepts) and the
+  priority selector is gone, so there is no level to guess. The API still accepts `priority`
+  `0`–`3` for integrations.
+
+### Added
+
 - Optional per-transfer support for the project: a switch on the Send page (`Off` by default,
   presets 0.5% / 1%), with the exact support amount and the destination address listed in the
   confirmation dialog before signing. The address is configurable through `SUPPORT_ADDRESS`.

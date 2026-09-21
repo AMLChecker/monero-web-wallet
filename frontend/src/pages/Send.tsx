@@ -1,5 +1,5 @@
-import { ArrowRight, CheckCircle2, Info, Send as SendIcon, TriangleAlert } from 'lucide-react';
-import { useEffect, useMemo, useState } from 'react';
+import { ArrowRight, CheckCircle2, Gauge, Info, Send as SendIcon, TriangleAlert } from 'lucide-react';
+import { useEffect, useState } from 'react';
 
 import { ApiError, api } from '../api/client';
 import { useToast } from '../components/Toast';
@@ -10,12 +10,14 @@ import { formatXmr, isValidAmountInput, shortenAddress } from '../lib/format';
 import type { Route } from '../lib/hashRouter';
 import { useWallet } from '../state/wallet';
 
-const PRIORITIES = [
-  { value: 0, label: 'Low' },
-  { value: 1, label: 'Normal' },
-  { value: 2, label: 'High' },
-  { value: 3, label: 'Fastest' },
-];
+/**
+ * Network priority is fixed to "Low" (0): the cheapest fee. The selector was
+ * removed on purpose - a single predictable value is easier to reason about than
+ * four levels whose real cost only shows up after the fee is calculated. The API
+ * still accepts 0-3, so integrations can opt into another level.
+ */
+const NETWORK_PRIORITY = 0;
+const PRIORITY_LABEL = 'Low';
 
 /** Optional support for the project: off by default, always shown in the review dialog. */
 const SUPPORT_OPTIONS = [
@@ -24,13 +26,6 @@ const SUPPORT_OPTIONS = [
   { value: 1, label: '1%' },
 ];
 
-const PRIORITY_HINT: Record<number, string> = {
-  0: 'Cheapest, may take longer to confirm.',
-  1: 'Default network priority.',
-  2: 'Higher fee, faster inclusion in a block.',
-  3: 'Highest fee, first in the next block.',
-};
-
 export function SendPage({ onNavigate }: { onNavigate: (route: Route) => void }) {
   const { info, rpcOffline, daemonOffline } = useWallet();
   const { push } = useToast();
@@ -38,7 +33,6 @@ export function SendPage({ onNavigate }: { onNavigate: (route: Route) => void })
 
   const [address, setAddress] = useState('');
   const [amount, setAmount] = useState('');
-  const [priority, setPriority] = useState(1);
   const [supportPercent, setSupportPercent] = useState(0);
   const [validation, setValidation] = useState<AddressValidation | null>(null);
   const [prepared, setPrepared] = useState<PreparedSend | null>(null);
@@ -79,7 +73,12 @@ export function SendPage({ onNavigate }: { onNavigate: (route: Route) => void })
     setBusy(true);
     setError(null);
     try {
-      const result = await api.prepareSend({ address: address.trim(), amount: amount.trim(), priority, supportPercent });
+      const result = await api.prepareSend({
+        address: address.trim(),
+        amount: amount.trim(),
+        priority: NETWORK_PRIORITY,
+        supportPercent,
+      });
       setPrepared(result);
     } catch (caught) {
       setError(caught as ApiError);
@@ -115,13 +114,10 @@ export function SendPage({ onNavigate }: { onNavigate: (route: Route) => void })
     setSent(null);
     setAddress('');
     setAmount('');
-    setPriority(1);
     setSupportPercent(0);
     setValidation(null);
     setError(null);
   };
-
-  const priorityLabel = useMemo(() => PRIORITIES.find((entry) => entry.value === priority)?.label ?? 'Normal', [priority]);
 
   if (sent) {
     return (
@@ -209,10 +205,18 @@ export function SendPage({ onNavigate }: { onNavigate: (route: Route) => void })
               hint="Leave room for the network fee when you spend the full balance."
             />
 
-            <div>
-              <p className="mb-1.5 text-[12.5px] font-medium text-ink-muted">Transaction priority</p>
-              <Segmented value={priority} options={PRIORITIES} onChange={setPriority} />
-              <p className="mt-1.5 text-[12px] text-ink-dim">{PRIORITY_HINT[priority]}</p>
+            <div className="rounded-xl border border-line bg-surface-sunken px-3.5 py-3">
+              <div className="flex items-center justify-between gap-3">
+                <span className="text-[12.5px] font-medium text-ink-muted">Transaction priority</span>
+                <span className="inline-flex items-center gap-1.5 text-[12.5px] font-medium text-ink">
+                  <Gauge className="h-3.5 w-3.5 text-ink-dim" />
+                  {PRIORITY_LABEL}
+                </span>
+              </div>
+              <p className="mt-1.5 text-[12px] leading-snug text-ink-dim">
+                Fixed to {PRIORITY_LABEL}: it pays the smallest network fee Monero accepts. Confirmation can take
+                longer than with a higher priority.
+              </p>
             </div>
 
             <div>
@@ -331,7 +335,7 @@ export function SendPage({ onNavigate }: { onNavigate: (route: Route) => void })
                 />
               ) : null}
               <Recap label="Total" value={prepared.totalAtomic ? `${formatXmr(prepared.totalAtomic)} XMR` : '—'} emphasis />
-              <Recap label="Priority" value={priorityLabel} />
+              <Recap label="Priority" value={PRIORITY_LABEL} />
             </div>
             {supportPercent > 0 && !prepared.support.enabled ? (
               <Alert tone="info">
