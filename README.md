@@ -13,6 +13,10 @@
 
 [Features](#features) · [Screenshots](#screenshots) · [Quick start](#quick-start-windows) · [Configuration](#configuration) · [Security](SECURITY.md) · [FAQ](#faq) · [Donate](#support-the-project)
 
+<a href="docs/screenshots/hero.png"><img src="docs/screenshots/hero.png" alt="Monero Web Wallet dashboard: total and unlocked balance, sync progress against the network, node status and recent activity" width="100%"></a>
+
+<sub><i>Dashboard of a freshly created demo wallet (no funds): total and unlocked balance, wallet vs. network height, node status and recent activity. Click to open full size.</i></sub>
+
 </div>
 
 ---
@@ -133,6 +137,8 @@ The design goal is simple: **the ergonomics of a modern app, the trust model of 
 - The backend rejects requests with a non-loopback `Host`/`Origin` header (DNS-rebinding and cross-site protection).
 
 ## Screenshots
+
+All screenshots below are taken with a freshly created demo wallet that holds no funds — no real address, balance or transaction history is published in this repository.
 
 | Dashboard | Send Monero | Receive / subaddresses |
 | --- | --- | --- |
