@@ -7,6 +7,7 @@ import type {
   PriceSourceId,
   PriceSourceOption,
   PreparedSend,
+  ProjectSupport,
   SentTransaction,
   TransactionsResponse,
   WalletInfo,
@@ -80,6 +81,7 @@ export const api = {
   validateAddress: (address: string) => post<AddressValidation>('/api/wallet/address/validate', { address }),
   refreshWallet: () => post<{ walletHeight: number | null }>('/api/wallet/refresh', {}),
   price: () => request<{ quote: PriceBlock; current: PriceSourceOption; sources: PriceSourceOption[] }>('/api/price'),
+  support: () => request<ProjectSupport>('/api/support'),
   setPriceSource: (source: PriceSourceId) =>
     post<{ current: PriceSourceOption; quote: PriceBlock }>('/api/price/source', { source }),
   prepareSend: (input: { address: string; amount: string; priority: number; supportPercent?: number }) =>

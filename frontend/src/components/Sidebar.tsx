@@ -2,6 +2,7 @@ import {
   ArrowDownToLine,
   ArrowUpFromLine,
   ArrowLeftRight,
+  HeartHandshake,
   LayoutDashboard,
   RefreshCw,
   Settings as SettingsIcon,
@@ -19,6 +20,7 @@ const NAV: Array<{ route: Route; label: string; icon: typeof LayoutDashboard }> 
   { route: 'send', label: 'Send', icon: ArrowUpFromLine },
   { route: 'receive', label: 'Receive', icon: ArrowDownToLine },
   { route: 'transactions', label: 'Transactions', icon: ArrowLeftRight },
+  { route: 'support', label: 'Support', icon: HeartHandshake },
   { route: 'settings', label: 'Settings', icon: SettingsIcon },
 ];
 

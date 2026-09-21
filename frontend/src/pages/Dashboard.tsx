@@ -1,4 +1,4 @@
-import { ArrowDownToLine, ArrowUpFromLine, Lock, Wallet } from 'lucide-react';
+import { ArrowDownToLine, ArrowUpFromLine, HeartHandshake, Lock, Wallet } from 'lucide-react';
 import { useState } from 'react';
 
 import { api } from '../api/client';
@@ -98,6 +98,13 @@ export function DashboardPage({ onNavigate }: { onNavigate: (route: Route) => vo
             </Button>
             <Button variant="secondary" onClick={() => onNavigate('receive')} icon={<ArrowDownToLine className="h-4 w-4" />}>
               Receive
+            </Button>
+            <Button
+              variant="secondary"
+              onClick={() => onNavigate('support')}
+              icon={<HeartHandshake className="h-4 w-4" />}
+            >
+              Support
             </Button>
           </div>
         </Card>

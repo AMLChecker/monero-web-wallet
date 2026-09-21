@@ -3,7 +3,16 @@ import path from 'node:path';
 
 import express, { type NextFunction, type Request, type Response } from 'express';
 
-import { APP_NAME, APP_VERSION, FRONTEND_DIST, HOST, PORT, RPC_AUTH_ENABLED, RPC_URL } from './config';
+import {
+  APP_NAME,
+  APP_VERSION,
+  FRONTEND_DIST,
+  getSupportAddress,
+  HOST,
+  PORT,
+  RPC_AUTH_ENABLED,
+  RPC_URL,
+} from './config';
 import { AppError, mapRpcError } from './errors';
 import { logger, logFilePathUsed } from './logger';
 import { MoneroRpcClient } from './moneroRpc';
@@ -254,6 +263,28 @@ app.post(
   wrap(async (req, res) => {
     const { prepareId } = body(req);
     res.json(wallet.cancelSend(prepareId));
+  }),
+);
+
+// --- support ------------------------------------------------------------
+
+/**
+ * Donation address this build sends voluntary support to. It comes from
+ * SUPPORT_ADDRESS / support-address.txt, so the Support page always shows exactly
+ * the address the backend would attach to a transfer. Read-only: nothing is sent.
+ */
+app.get(
+  '/api/support',
+  wrap(async (_req, res) => {
+    const address = getSupportAddress();
+    let valid: boolean | null = null;
+    let network: string | null = null;
+    if (wallet.current) {
+      const validation = await wallet.validateAddress(address).catch(() => null);
+      valid = validation?.valid ?? null;
+      network = validation?.nettype ?? null;
+    }
+    res.json({ address, valid, network });
   }),
 );
 

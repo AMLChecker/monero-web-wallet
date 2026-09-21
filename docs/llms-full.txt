@@ -127,6 +127,11 @@ The design goal is simple: **the ergonomics of a modern app, the trust model of 
 - **Support for the project** — a **0.5%** tip is preselected on the Send page and `Off` or `1%` is one tap away. Nothing is ever charged quietly: the confirmation dialog lists the exact support amount and the address it goes to before anything is signed. The address is configurable with `SUPPORT_ADDRESS` (change it if you fork).
 - Clear, human-readable errors instead of raw RPC codes ("Not enough spendable balance", "Wallet RPC cannot reach the Monero daemon", …).
 
+### Supporting the project
+
+- A dedicated **Support** page — reachable from the sidebar and from the Dashboard button next to Send and Receive — for a voluntary donation straight to the developer address, with the QR code and the address shown for anyone who would rather donate from another wallet.
+- **No commission is ever added on a donation:** the whole amount reaches the address and the only other cost is the Monero network fee. The confirmation dialog prints the amount, the fee and "Commission taken by this wallet — None" before anything is signed.
+
 ### Node
 
 - Live node status: daemon address, height, latency, connection state, wallet-vs-network sync percentage.
@@ -165,9 +170,13 @@ All screenshots below are taken with a freshly created demo wallet that holds no
 | --- | --- | --- |
 | ![Monero wallet dashboard with balance and sync status](docs/screenshots/dashboard.png) | ![Send Monero form with fee review](docs/screenshots/send.png) | ![Receive page with QR code and subaddress list](docs/screenshots/receive.png) |
 
-| Transactions | Settings (wallet, node, security) | Mobile layout with navigation drawer |
+| Transactions | Support the project | Settings (wallet, node, security) |
 | --- | --- | --- |
-| ![Monero transaction history with confirmations and txid](docs/screenshots/transactions.png) | ![Wallet settings: node address, lock wallet, backup phrase](docs/screenshots/settings.png) | ![Mobile responsive wallet layout](docs/screenshots/mobile.png) |
+| ![Monero transaction history with confirmations and txid](docs/screenshots/transactions.png) | ![Support page: donation amount presets, QR code and the developer address](docs/screenshots/support.png) | ![Wallet settings: node address, lock wallet, backup phrase](docs/screenshots/settings.png) |
+
+| Mobile layout with navigation drawer |
+| --- |
+| ![Mobile responsive wallet layout](docs/screenshots/mobile.png) |
 
 ## Architecture
 
@@ -598,6 +607,8 @@ non-refundable.
 Send <b>XMR on mainnet only</b> — funds sent on another network or asset cannot be recovered.</sub>
 
 </div>
+
+The same address is wired into the wallet: open **Support** in the sidebar (or the button next to Send and Receive on the Dashboard), pick an amount and the transfer is built and reviewed like any other payment — with no commission added on top.
 
 The address in `monero:` URI form:
 

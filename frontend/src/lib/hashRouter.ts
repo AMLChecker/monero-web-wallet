@@ -1,9 +1,18 @@
 import { useCallback, useEffect, useState } from 'react';
 
-export const ROUTES = ['welcome', 'create', 'dashboard', 'send', 'receive', 'transactions', 'settings'] as const;
+export const ROUTES = [
+  'welcome',
+  'create',
+  'dashboard',
+  'send',
+  'receive',
+  'transactions',
+  'support',
+  'settings',
+] as const;
 export type Route = (typeof ROUTES)[number];
 
-export const WALLET_ROUTES: Route[] = ['dashboard', 'send', 'receive', 'transactions', 'settings'];
+export const WALLET_ROUTES: Route[] = ['dashboard', 'send', 'receive', 'transactions', 'support', 'settings'];
 
 function parseHash(): Route {
   const raw = window.location.hash.replace(/^#\/?/, '').split('?')[0].toLowerCase();

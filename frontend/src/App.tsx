@@ -12,6 +12,7 @@ import { DashboardPage } from './pages/Dashboard';
 import { ReceivePage } from './pages/Receive';
 import { SendPage } from './pages/Send';
 import { SettingsPage } from './pages/Settings';
+import { SupportPage } from './pages/Support';
 import { TransactionsPage } from './pages/Transactions';
 import { WelcomePage } from './pages/Welcome';
 import { WalletProvider, useWallet } from './state/wallet';
@@ -23,6 +24,7 @@ const PAGE_META: Record<Route, { title: string; subtitle: string }> = {
   send: { title: 'Send', subtitle: 'Build, review and broadcast a transaction' },
   receive: { title: 'Receive', subtitle: 'Share your address or create a subaddress' },
   transactions: { title: 'Transactions', subtitle: 'Every transfer known to this wallet' },
+  support: { title: 'Support', subtitle: 'Voluntary donation to the developer of this wallet' },
   settings: { title: 'Settings', subtitle: 'Wallet, node and security options' },
 };
 
@@ -90,6 +92,8 @@ function Shell() {
         return <ReceivePage />;
       case 'transactions':
         return <TransactionsPage />;
+      case 'support':
+        return <SupportPage onNavigate={navigate} />;
       case 'settings':
         return <SettingsPage onLock={lockWallet} locking={locking} />;
       case 'dashboard':

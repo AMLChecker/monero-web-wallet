@@ -59,7 +59,9 @@ How it works:
   network fee, and it is relayed only after you confirm. Cancelling discards it;
 - your wallet password is never stored in the browser, localStorage or logs, and the seed is shown only on
   wallet creation or an explicit export that re-verifies the password;
-- you can point it at your own monerod or a remote node, and switch nodes later in Settings.
+- you can point it at your own monerod or a remote node, and switch nodes later in Settings;
+- there is a Support page for voluntary donations (it adds no commission of its own), and the wallet takes
+  no cut of any transaction.
 
 Stack: TypeScript (Node/Express backend), React + Vite + Tailwind frontend, Windows one-click Start.bat.
 It is MIT-licensed, unaudited, and it does not phone home to anything.

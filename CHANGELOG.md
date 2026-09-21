@@ -15,6 +15,12 @@ project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+- A **Support** page — with a button on the Dashboard next to Send and Receive and an entry in
+  the sidebar — for a voluntary donation to the developer address: presets or a custom amount,
+  QR code and address for donations sent from another wallet, and a confirmation dialog that
+  states plainly that no commission is added (only the Monero network fee). The address comes
+  from `SUPPORT_ADDRESS` / `support-address.txt` and reaches the UI through `GET /api/support`,
+  so a fork shows its own address.
 - Support for the project on the Send page: a **0.5%** tip is preselected (`Off` and `1%` are
   one tap away), and the exact support amount plus the destination address are listed in the
   confirmation dialog before signing. The address is configurable through `SUPPORT_ADDRESS`.

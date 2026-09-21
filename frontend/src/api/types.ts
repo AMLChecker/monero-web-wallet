@@ -140,6 +140,13 @@ export type SupportInfo = {
   amountAtomic: string;
 };
 
+/** Donation address compiled into this build (SUPPORT_ADDRESS / support-address.txt). */
+export type ProjectSupport = {
+  address: string;
+  valid: boolean | null;
+  network: string | null;
+};
+
 export type SentTransaction = {
   txHash: string;
   feeAtomic: string | null;
