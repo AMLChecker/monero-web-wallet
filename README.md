@@ -11,7 +11,7 @@
 [![Monero: 0.18.x](https://img.shields.io/badge/Monero-0.18.x-FF6600)](https://www.getmonero.org/downloads/)
 [![PRs welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
 
-[Features](#features) · [Screenshots](#screenshots) · [Quick start](#quick-start-windows) · [Configuration](#configuration) · [Security](SECURITY.md) · [FAQ](#faq) · [Donate](#support-the-project) · [Русский](README.ru.md)
+[Website](https://amlchecker.github.io/monero-web-wallet/) · [Features](#features) · [Screenshots](#screenshots) · [Quick start](#quick-start-windows) · [Configuration](#configuration) · [Security](SECURITY.md) · [FAQ](#faq) · [Donate](#support-the-project) · [Русский](README.ru.md)
 
 <a href="docs/screenshots/hero.png"><img src="docs/screenshots/hero.png" alt="Monero Web Wallet dashboard: total and unlocked balance, sync progress against the network, node status and recent activity" width="100%"></a>
 
@@ -137,6 +137,10 @@ The design goal is simple: **the ergonomics of a modern app, the trust model of 
 ## Screenshots
 
 All screenshots below are taken with a freshly created demo wallet that holds no funds — no real address, balance or transaction history is published in this repository.
+
+![Animated tour of Monero Web Wallet: dashboard with balance and sync status, send form, creating a subaddress, transaction history and settings](docs/screenshots/demo.gif)
+
+*A 25-second tour: dashboard and sync status → send form → subaddress with QR → history → settings.*
 
 | Dashboard | Send Monero | Receive / subaddresses |
 | --- | --- | --- |
