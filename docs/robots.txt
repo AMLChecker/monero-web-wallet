@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://amlchecker.github.io/monero-web-wallet/sitemap.xml
