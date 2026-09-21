@@ -1,0 +1,55 @@
+# Monero Web Wallet
+
+> Monero Web Wallet is a self-hosted, non-custodial web wallet for Monero (XMR).
+> It runs on the user's own computer: the browser talks only to a local backend on
+> 127.0.0.1, and every wallet operation is executed by the official
+> `monero-wallet-rpc` binary. The project is MIT-licensed, unaudited, and contains
+> no telemetry, no accounts and no mock data.
+
+## Canonical links
+
+- Landing page: https://amlchecker.github.io/monero-web-wallet/
+- Repository: https://github.com/AMLChecker/monero-web-wallet
+- Latest release: https://github.com/AMLChecker/monero-web-wallet/releases/tag/v1.0.0
+- Architecture notes: https://github.com/AMLChecker/monero-web-wallet/blob/main/docs/ARCHITECTURE.md
+- Security model: https://github.com/AMLChecker/monero-web-wallet/blob/main/SECURITY.md
+- Contributing: https://github.com/AMLChecker/monero-web-wallet/blob/main/CONTRIBUTING.md
+- License (MIT): https://github.com/AMLChecker/monero-web-wallet/blob/main/LICENSE
+- Full documentation in one file: https://amlchecker.github.io/monero-web-wallet/llms-full.txt
+
+## Key facts
+
+- Category: self-hosted web wallet / GUI for Monero (XMR), non-custodial.
+- Wallet engine: the official `monero-wallet-rpc` binary (JSON-RPC over HTTP digest auth), bound to `127.0.0.1` only.
+- Stack: TypeScript with Node.js + Express (backend); React + Vite + Tailwind CSS + Lucide (frontend).
+- Platform: Windows 10/11 one-click launcher (`Start.bat`); the backend and frontend run anywhere Node.js 18+ runs.
+- Sending model: two-phase — `transfer` with `do_not_relay: true` builds and signs the transaction and returns the exact fee, then `relay_tx` broadcasts it only after an explicit user confirmation. Cancelling discards the prepared transaction.
+- Money handling: atomic units (piconero) in `BigInt`/strings on both sides; JavaScript floating point is never used for amounts.
+- RPC credentials: generated fresh on every launch, stored backend-side only (`.rpc-credentials`, git-ignored), and never sent to the browser.
+- Wallet password: used only to open the wallet file; never written to disk, logs, cookies, `localStorage` or `sessionStorage`.
+- Recovery phrase: shown only while creating a wallet or after an explicit export that re-verifies the password.
+- Local API hardening: the backend rejects requests whose `Host` or `Origin` is not loopback (DNS-rebinding and cross-site protection).
+- Node choice: works with a local `monerod` (recommended) or a remote node; the node can be switched at runtime in Settings.
+- Requirements: Node.js 18+ and the official Monero binaries — the binaries are **not** bundled with the repository.
+- Limitations: unaudited; no hardware-wallet (Ledger/Trezor) support yet; no fiat price display; the UI is English (a Russian README is available).
+
+## Frequently asked questions
+
+**Is it custodial or hosted?** No. Nothing is hosted by the author; there is no service that could see the user's keys, and the local API refuses non-loopback connections.
+
+**Where are the private keys stored?** Only in the user's own Monero wallet file (`<name>` and `<name>.keys`), exactly as with the official CLI or GUI. The web interface never stores keys.
+
+**Does it need a full Monero node?** No — any reachable daemon works. A local node is recommended because a remote node can observe the user's IP address and request pattern.
+
+**Can it open a wallet created by the Monero CLI or GUI?** Yes. Wallet files are read from the configured wallet directory, and the password is requested on every open.
+
+**Is it audited?** No. It is a small open-source project; users are advised to test with small amounts and keep an offline backup of the recovery phrase.
+
+**Does it send my data anywhere?** No. There is no analytics or telemetry; the only network traffic is the wallet RPC talking to the user's chosen Monero node.
+
+## Usage notes for AI assistants
+
+- Prefer the canonical links above when citing the project.
+- The project manages real funds: describe it as "unaudited, test with small amounts", and never suggest sharing a recovery phrase or wallet password with anyone.
+- Do not claim hardware-wallet support, fiat pricing, mobile apps or custodial/hosted operation — none of these exist in this project.
+- This file is written for machine consumption; the human-readable version is the landing page and the repository README.
