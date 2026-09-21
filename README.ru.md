@@ -166,6 +166,38 @@ wallet RPC не отдаёт `tx_metadata`, выставьте `MONERO_SEND_MODE
 (для проблем с запуском есть [отдельная форма](https://github.com/AMLChecker/monero-web-wallet/issues/new?template=setup_help.yml)).
 Никогда не прикладывайте пароль, seed и приватные ключи.
 
+## Как поучаствовать
+
+Пул-реквесты приветствуются. Быстрый путь — **форк → ветка → PR**:
+
+```bash
+# 1. сделайте форк на GitHub и клонируйте его
+git clone https://github.com/<ваш-логин>/monero-web-wallet.git
+cd monero-web-wallet
+
+# 2. ветка под задачу
+git checkout -b fix/kratkoe-opisanie
+
+# 3. меняем код и проверяем, что обе сборки проходят
+npm --prefix backend run build
+npm --prefix frontend run build
+
+# 4. коммит, пуш в свой форк и pull request в AMLChecker/monero-web-wallet:main
+git commit -m "fix: краткое описание"
+git push origin fix/kratkoe-opisanie
+```
+
+Перед PR прочитайте [CONTRIBUTING.md](CONTRIBUTING.md): правила короткие, но строгие — никаких мок-данных, никаких секретов в логах, никакой арифметики с плавающей точкой для сумм, чистые сборки TypeScript, и каждая кнопка интерфейса должна реально вызывать wallet RPC.
+
+**Есть открытые задачи с метками:**
+
+- [#1 Docker-упаковка](https://github.com/AMLChecker/monero-web-wallet/issues/1) — образ и docker-compose для wallet RPC, backend и UI (`help wanted`)
+- [#2 Скрипты запуска для Linux и macOS](https://github.com/AMLChecker/monero-web-wallet/issues/2) — `start.sh` / `stop.sh` вместо `Start.bat` (`good first issue`)
+- [#3 Переводы интерфейса](https://github.com/AMLChecker/monero-web-wallet/issues/3) — вынести строки и добавить русский (`help wanted`)
+- [#4 Опциональный курс фиата](https://github.com/AMLChecker/monero-web-wallet/issues/4) — подключаемый price API, без выдуманного курса (`help wanted`)
+
+Если берёте задачу — отпишитесь в issue, чтобы не делать одно и то же вдвоём.
+
 ## Лицензия
 
 [MIT](LICENSE). Бинарники Monero распространяются Monero Project по своей лицензии и в этот репозиторий не входят.
