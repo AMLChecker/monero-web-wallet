@@ -512,24 +512,30 @@ review dialog that shows the exact fee and total. That is intentional.
 </details>
 
 <details>
-<summary><b>Why does the UI say "USD value is hidden"?</b></summary>
+<summary><b>Does the wallet show a fiat price?</b></summary>
 
-Because no price API is configured and the project will not invent a rate. Add your own
-price source if you want fiat values.
+Only if you ask it to. Settings → <b>Price</b> offers USDT via Kraken (XMR/USDT), USD via
+CoinGecko (XMR/USD) or your own endpoint; it is off by default, cached for a minute and
+switchable at any time. When no source is configured — or the API is unreachable — the UI
+shows no fiat amount at all, because the project never invents a rate.
 </details>
 
 ## Roadmap
 
-Planned, not implemented (contributions welcome):
+**Shipped recently**
 
-- optional fiat price display via a user-configured price API;
-- address book and labeled contacts;
-- integrated addresses and payment IDs in the Receive page;
-- multiple accounts (currently account 0 is used);
-- translated UI (currently English);
-- launcher scripts for Linux and macOS;
-- optional hardware-wallet support;
-- automated end-to-end tests against a regtest/stagenet daemon.
+- **Balance quote in USDT / USD** ([#4](https://github.com/AMLChecker/monero-web-wallet/issues/4)) — Kraken XMR/USDT, CoinGecko XMR/USD or a custom endpoint, off by default. See [Price](#price).
+
+**Planned — contributions welcome** (each links to an issue you can pick up)
+
+- Docker packaging — [#1](https://github.com/AMLChecker/monero-web-wallet/issues/1)
+- Launcher scripts for Linux and macOS — [#2](https://github.com/AMLChecker/monero-web-wallet/issues/2)
+- Translated UI (currently English, Russian docs exist) — [#3](https://github.com/AMLChecker/monero-web-wallet/issues/3)
+- Address book and labeled contacts
+- Integrated addresses and payment IDs in the Receive page
+- Multiple accounts (currently account 0 is used)
+- Optional hardware-wallet support
+- End-to-end tests against a regtest/stagenet daemon
 
 ## Support the project
 
@@ -595,9 +601,10 @@ Please read [CONTRIBUTING.md](CONTRIBUTING.md) before opening a PR — the rules
 - [#1 Docker packaging](https://github.com/AMLChecker/monero-web-wallet/issues/1) — image + docker-compose for the wallet RPC, backend and UI (`help wanted`)
 - [#2 Launcher scripts for Linux and macOS](https://github.com/AMLChecker/monero-web-wallet/issues/2) — `start.sh` / `stop.sh` equivalent to `Start.bat` (`good first issue`)
 - [#3 UI translations](https://github.com/AMLChecker/monero-web-wallet/issues/3) — extract strings, add Russian (`help wanted`)
-- [#4 Optional fiat price display](https://github.com/AMLChecker/monero-web-wallet/issues/4) — opt-in price API, never an invented rate (`help wanted`)
 
 Everything labelled [good first issue](https://github.com/AMLChecker/monero-web-wallet/labels/good%20first%20issue) and [help wanted](https://github.com/AMLChecker/monero-web-wallet/labels/help%20wanted) is fair game — comment on the issue if you want to take one, so we do not duplicate work.
+
+Already shipped and waiting for a reviewer instead: [#4](https://github.com/AMLChecker/monero-web-wallet/issues/4) — optional USDT/USD balance quote (see [Price](#price)).
 
 ## License
 

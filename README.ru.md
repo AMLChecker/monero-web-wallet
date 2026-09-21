@@ -40,6 +40,7 @@
   **точную комиссию**, и только после подтверждения она рассылается (`relay_tx`).
 - **Субадреса** — создание с метками, переключение, копирование и QR-код для любого адреса.
 - **Управление узлом** — статус демона, задержка, высота сети и переключение узла прямо в Settings.
+- **Опциональная цена** — баланс можно показывать в **USDT** (Kraken XMR/USDT) или **USD** (CoinGecko), либо через свой endpoint. По умолчанию выключено; при включении это единственный внешний запрос кошелька (не чаще раза в минуту, с кэшем), и курс никогда не выдумывается.
 - **Резервная копия seed** — экспорт 25 слов только после повторного ввода пароля кошелька.
 - **Тёмный адаптивный интерфейс** — боковая панель на десктопе, выезжающее меню на телефоне, таблицы превращаются
   в карточки, модальные окна — в нижние шторки.
@@ -115,6 +116,8 @@ npm run build                               # прод-сборка в frontend/
 | `MONERO_WALLET_DIR` | корень проекта (или `wallets/`, если там уже есть кошельки) | каталог `--wallet-dir` |
 | `MONERO_DAEMON_ADDRESS` | `127.0.0.1:18081`, затем `node-address.txt` | демон Monero (`host:port`) |
 | `MONERO_SEND_MODE` | `prepare` | `prepare` — построить → подтвердить → relay; `direct` — один подтверждённый `transfer` |
+| `PRICE_SOURCE` | `none` (или значение из `price-source.txt`) | источник цены: `none`, `kraken` (XMR/USDT), `coingecko` (XMR/USD), `custom` |
+| `PRICE_API_URL` | пусто | endpoint для источника `custom`; должен вернуть JSON с числовым `price` |
 | `PORT` / `HOST` | `18082` / `127.0.0.1` | адрес backend'а (держите loopback) |
 | `LOG_LEVEL` | `info` | `debug`, `info`, `warn`, `error` |
 
@@ -194,7 +197,7 @@ git push origin fix/kratkoe-opisanie
 - [#1 Docker-упаковка](https://github.com/AMLChecker/monero-web-wallet/issues/1) — образ и docker-compose для wallet RPC, backend и UI (`help wanted`)
 - [#2 Скрипты запуска для Linux и macOS](https://github.com/AMLChecker/monero-web-wallet/issues/2) — `start.sh` / `stop.sh` вместо `Start.bat` (`good first issue`)
 - [#3 Переводы интерфейса](https://github.com/AMLChecker/monero-web-wallet/issues/3) — вынести строки и добавить русский (`help wanted`)
-- [#4 Опциональный курс фиата](https://github.com/AMLChecker/monero-web-wallet/issues/4) — подключаемый price API, без выдуманного курса (`help wanted`)
+- уже сделано: [#4 Опциональный курс фиата](https://github.com/AMLChecker/monero-web-wallet/issues/4) — USDT/USD в Settings → Price (ждёт ревью, а не разработки)
 
 Если берёте задачу — отпишитесь в issue, чтобы не делать одно и то же вдвоём.
 
