@@ -7,7 +7,9 @@ project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
-Nothing yet.
+- Optional per-transfer support for the project: a switch on the Send page (`Off` by default,
+  presets 0.5% / 1%), with the exact support amount and the destination address listed in the
+  confirmation dialog before signing. The address is configurable through `SUPPORT_ADDRESS`.
 
 ## [1.0.1] - 2026-09-21
 

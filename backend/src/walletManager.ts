@@ -7,12 +7,13 @@ import {
   SEND_MODE,
   WALLET_DIR,
   getDaemonAddress,
+  getSupportAddress,
   listWalletNames,
   setDaemonAddress,
 } from './config';
 import { MoneroRpcClient } from './moneroRpc';
 import { AppError, mapRpcError } from './errors';
-import { atomicToBigInt, parseXmrToAtomic } from './amounts';
+import { atomicToBigInt, clampSupportPercent, computeSupportAmount, parseXmrToAtomic } from './amounts';
 import { getDaemonStatus, invalidateDaemonStatus, type DaemonStatus } from './daemon';
 import { formatUsdt, priceService } from './price';
 import { logger } from './logger';
@@ -34,6 +35,13 @@ type PreparedSend = {
   priority: number;
   note?: string;
   txMetadata?: string;
+  /** Optional developer support included in the same transaction. */
+  support: {
+    enabled: boolean;
+    percent: number;
+    address: string | null;
+    amountAtomic: string;
+  };
 };
 
 export type TxRecord = {
@@ -666,7 +674,13 @@ export class WalletManager {
     }
   }
 
-  async prepareSend(input: { address?: unknown; amount?: unknown; priority?: unknown; note?: unknown }) {
+  async prepareSend(input: {
+    address?: unknown;
+    amount?: unknown;
+    priority?: unknown;
+    note?: unknown;
+    supportPercent?: unknown;
+  }) {
     this.requireSession();
     this.prunePrepared();
 
@@ -682,14 +696,28 @@ export class WalletManager {
     const priority = Math.min(3, Math.max(0, Number.isFinite(Number(input.priority)) ? Number(input.priority) : 0));
     const note = typeof input.note === 'string' ? input.note.trim().slice(0, 200) : undefined;
 
+    // Optional, opt-in developer support: a second destination in the same
+    // transaction. It is always shown in the confirmation dialog before signing.
+    const supportPercent = clampSupportPercent(input.supportPercent);
+    const supportAddress = supportPercent > 0 ? getSupportAddress() : null;
+    const supportAtomic = supportPercent > 0 ? computeSupportAmount(amountAtomic, supportPercent) : 0n;
+    const support = {
+      enabled: supportAtomic > 0n && supportAddress !== null,
+      percent: supportPercent,
+      address: supportAtomic > 0n ? supportAddress : null,
+      amountAtomic: supportAtomic.toString(),
+    };
+
     const balance = await this.balance();
     const unlocked = atomicToBigInt(balance.unlockedAtomic);
-    if (amountAtomic > unlocked) {
+    if (amountAtomic + supportAtomic > unlocked) {
       throw new AppError(
         400,
         'INSUFFICIENT_FUNDS',
         'Not enough spendable balance for this transaction.',
-        'Recently received funds stay locked for about 20 minutes before they can be spent.',
+        support.enabled
+          ? 'The amount plus the optional developer support exceeds the unlocked balance — turn the support off and try again.'
+          : 'Recently received funds stay locked for about 20 minutes before they can be spent.',
       );
     }
 
@@ -704,8 +732,10 @@ export class WalletManager {
         feeAtomic: fee,
         priority,
         note,
+        support,
       };
       this.prepared.set(entry.id, entry);
+      const totalAtomic = amountAtomic + supportAtomic + (fee ? BigInt(fee) : 0n);
       return {
         prepareId: entry.id,
         mode: 'direct' as const,
@@ -713,7 +743,8 @@ export class WalletManager {
         amountAtomic: entry.amountAtomic,
         feeAtomic: fee,
         feeEstimated: true,
-        totalAtomic: fee ? (amountAtomic + BigInt(fee)).toString() : null,
+        totalAtomic: totalAtomic.toString(),
+        support,
         priority,
         expiresAt: entry.createdAt + PREPARED_SEND_TTL_MS,
       };
@@ -728,6 +759,8 @@ export class WalletManager {
         accountIndex: 0,
         doNotRelay: true,
         note,
+        supportAddress: support.enabled ? support.address ?? undefined : undefined,
+        supportAtomic: support.enabled ? support.amountAtomic : undefined,
       }),
     );
 
@@ -746,14 +779,19 @@ export class WalletManager {
       createdAt: Date.now(),
       mode: 'prepare',
       address,
-      amountAtomic: toAtomicString(prepared.amount ?? amountAtomic),
+      amountAtomic: amountAtomic.toString(),
       feeAtomic,
       priority,
       note,
+      support,
       txMetadata: prepared.tx_metadata,
     };
     this.prepared.set(entry.id, entry);
-    logger.info('transaction prepared (not relayed)', { wallet: session.name, priority });
+    logger.info('transaction prepared (not relayed)', {
+      wallet: session.name,
+      priority,
+      supportPercent: support.enabled ? support.percent : 0,
+    });
 
     return {
       prepareId: entry.id,
@@ -762,7 +800,12 @@ export class WalletManager {
       amountAtomic: entry.amountAtomic,
       feeAtomic,
       feeEstimated: false,
-      totalAtomic: (atomicToBigInt(entry.amountAtomic) + atomicToBigInt(feeAtomic)).toString(),
+      totalAtomic: (
+        atomicToBigInt(entry.amountAtomic) +
+        atomicToBigInt(support.amountAtomic) +
+        atomicToBigInt(feeAtomic)
+      ).toString(),
+      support,
       priority,
       expiresAt: entry.createdAt + PREPARED_SEND_TTL_MS,
     };
@@ -789,6 +832,7 @@ export class WalletManager {
         feeAtomic: entry.feeAtomic,
         amountAtomic: entry.amountAtomic,
         address: entry.address,
+        support: entry.support,
         sentAt: Date.now(),
       };
     }
@@ -801,6 +845,8 @@ export class WalletManager {
         accountIndex: 0,
         doNotRelay: false,
         note: entry.note,
+        supportAddress: entry.support.enabled ? entry.support.address ?? undefined : undefined,
+        supportAtomic: entry.support.enabled ? entry.support.amountAtomic : undefined,
       }),
     );
     this.prepared.delete(prepareId);
@@ -811,6 +857,7 @@ export class WalletManager {
       feeAtomic: toAtomicString(result.fee),
       amountAtomic: toAtomicString(result.amount ?? entry.amountAtomic),
       address: entry.address,
+      support: entry.support,
       sentAt: Date.now(),
     };
   }

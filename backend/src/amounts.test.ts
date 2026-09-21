@@ -3,7 +3,10 @@ import { describe, it } from 'node:test';
 
 import {
   ATOMIC_UNITS_PER_XMR,
+  SUPPORT_PERCENT_MAX,
   atomicToBigInt,
+  clampSupportPercent,
+  computeSupportAmount,
   formatAtomic,
   formatAtomicCompact,
   parseXmrToAtomic,
@@ -80,5 +83,53 @@ describe('formatAtomicCompact', () => {
   it('keeps significant digits for dust', () => {
     assert.equal(formatAtomicCompact(1n), '0.000000000001');
     assert.equal(formatAtomicCompact(0n), '0.000000');
+  });
+});
+
+describe('clampSupportPercent', () => {
+  it('treats missing, zero and negative values as "off"', () => {
+    assert.equal(clampSupportPercent(undefined), 0);
+    assert.equal(clampSupportPercent(null), 0);
+    assert.equal(clampSupportPercent(0), 0);
+    assert.equal(clampSupportPercent(-3), 0);
+    assert.equal(clampSupportPercent('abc'), 0);
+  });
+
+  it('accepts percentages up to the configured maximum', () => {
+    assert.equal(clampSupportPercent(0.5), 0.5);
+    assert.equal(clampSupportPercent(1), 1);
+    assert.equal(clampSupportPercent('2.5'), 2.5);
+    assert.equal(clampSupportPercent(50), SUPPORT_PERCENT_MAX);
+  });
+
+  it('keeps at most two decimals', () => {
+    assert.equal(clampSupportPercent(0.505), 0.51);
+    assert.equal(clampSupportPercent(1.239), 1.24);
+  });
+});
+
+describe('computeSupportAmount', () => {
+  const oneXmr = 1_000_000_000_000n;
+
+  it('returns zero when support is off', () => {
+    assert.equal(computeSupportAmount(oneXmr, 0), 0n);
+    assert.equal(computeSupportAmount(oneXmr, -1), 0n);
+    assert.equal(computeSupportAmount(0n, 1), 0n);
+  });
+
+  it('computes the percentage with BigInt', () => {
+    assert.equal(computeSupportAmount(oneXmr, 0.5), 5_000_000_000n);
+    assert.equal(computeSupportAmount(oneXmr, 1), 10_000_000_000n);
+    assert.equal(computeSupportAmount(250_000_000_000n, 1), 2_500_000_000n);
+  });
+
+  it('floors instead of rounding up, so the sender never overpays', () => {
+    // 0.5% of 50 atomic units is 0.25 → floored to zero, i.e. no support at all
+    assert.equal(computeSupportAmount(50n, 0.5), 0n);
+    assert.equal(computeSupportAmount(199n, 1), 1n);
+  });
+
+  it('clamps the percentage before computing', () => {
+    assert.equal(computeSupportAmount(oneXmr, 100), (oneXmr * 5n) / 100n);
   });
 });

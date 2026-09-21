@@ -82,7 +82,8 @@ export const api = {
   price: () => request<{ quote: PriceBlock; current: PriceSourceOption; sources: PriceSourceOption[] }>('/api/price'),
   setPriceSource: (source: PriceSourceId) =>
     post<{ current: PriceSourceOption; quote: PriceBlock }>('/api/price/source', { source }),
-  prepareSend: (input: { address: string; amount: string; priority: number }) => post<PreparedSend>('/api/wallet/send/prepare', input),
+  prepareSend: (input: { address: string; amount: string; priority: number; supportPercent?: number }) =>
+    post<PreparedSend>('/api/wallet/send/prepare', input),
   send: (prepareId: string) => post<SentTransaction>('/api/wallet/send', { prepareId }),
   cancelSend: (prepareId: string) => post<{ cancelled: boolean }>('/api/wallet/send/cancel', { prepareId }),
   setDaemon: (address: string) => post<{ daemonAddress: string; online: boolean; height: number | null; error: string | null; note: string }>('/api/node/daemon', { address }),

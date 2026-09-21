@@ -24,6 +24,7 @@
 - Stack: TypeScript with Node.js + Express (backend); React + Vite + Tailwind CSS + Lucide (frontend).
 - Platform: one-click launchers for Windows (`Start.bat` / `Stop.bat`) and Linux/macOS (`start.sh` / `stop.sh`); the backend and frontend run anywhere Node.js 18+ runs.
 - Sending model: two-phase — `transfer` with `do_not_relay: true` builds and signs the transaction and returns the exact fee, then `relay_tx` broadcasts it only after an explicit user confirmation. Cancelling discards the prepared transaction.
+- Optional developer support: off by default; when the sender enables it (0.5% or 1%) the confirmation dialog shows the exact amount and the destination address before signing. It is never hidden and never automatic.
 - Money handling: atomic units (piconero) in `BigInt`/strings on both sides; JavaScript floating point is never used for amounts.
 - RPC credentials: generated fresh on every launch, stored backend-side only (`.rpc-credentials`, git-ignored), and never sent to the browser.
 - Wallet password: used only to open the wallet file; never written to disk, logs, cookies, `localStorage` or `sessionStorage`.

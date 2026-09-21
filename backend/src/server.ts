@@ -235,8 +235,8 @@ app.post(
 app.post(
   '/api/wallet/send/prepare',
   wrap(async (req, res) => {
-    const { address, amount, priority, note } = body(req);
-    res.json(await wallet.prepareSend({ address, amount, priority, note }));
+    const { address, amount, priority, note, supportPercent } = body(req);
+    res.json(await wallet.prepareSend({ address, amount, priority, note, supportPercent }));
   }),
 );
 

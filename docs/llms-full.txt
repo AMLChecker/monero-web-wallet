@@ -124,6 +124,7 @@ The design goal is simple: **the ergonomics of a modern app, the trust model of 
 - Recipient address validation through `validate_address` (mainnet only) before anything is built.
 - **Two-phase send:** the transaction is built and signed locally with `do_not_relay`, you see the **exact** network fee and the total, and only your explicit confirmation broadcasts it with `relay_tx`.
 - Priority selector (low → fastest) and a "MAX" helper that respects locked balances.
+- **Optional support for the project** — off by default, with 0.5% / 1% presets. When it is on, the confirmation dialog lists the exact support amount and the address it goes to before anything is signed. The address is configurable with `SUPPORT_ADDRESS` (change it if you fork).
 - Clear, human-readable errors instead of raw RPC codes ("Not enough spendable balance", "Wallet RPC cannot reach the Monero daemon", …).
 
 ### Node
@@ -302,6 +303,7 @@ All environment variables are optional.
 | `MONERO_SEND_MODE` | `prepare` | `prepare` = build → confirm → relay; `direct` = one confirmed `transfer` |
 | `PRICE_SOURCE` | `none` (or the value in `price-source.txt`) | Balance quote: `none`, `kraken` (XMR/USDT), `coingecko` (XMR/USD), `custom` |
 | `PRICE_API_URL` | empty | Endpoint for the `custom` source; must return JSON with a numeric `price` |
+| `SUPPORT_ADDRESS` | the donation address from this README | Address that receives the optional per-transfer support amount (always shown in the confirmation dialog before signing) |
 | `PORT` / `HOST` | `18082` / `127.0.0.1` | Backend bind address (keep it loopback) |
 | `LOG_LEVEL` | `info` | `debug`, `info`, `warn`, `error` |
 | `MONERO_BACKEND_PORT` | `18082` | Backend port used by the Vite dev proxy |

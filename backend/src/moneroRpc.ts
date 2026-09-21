@@ -308,14 +308,24 @@ export class MoneroRpcClient {
     accountIndex: number;
     doNotRelay: boolean;
     note?: string;
+    /** Optional developer support: a second destination in the same transaction. */
+    supportAddress?: string;
+    supportAtomic?: string;
   }) {
     if (!/^\d+$/.test(params.amountAtomic)) {
       throw new RpcError(-1, 'Internal error: amount must be an integer in atomic units');
     }
+    if (params.supportAtomic !== undefined && !/^\d+$/.test(params.supportAtomic)) {
+      throw new RpcError(-1, 'Internal error: support amount must be an integer in atomic units');
+    }
     const note = params.note ? `, "note": ${JSON.stringify(params.note)}` : '';
+    const support =
+      params.supportAddress && params.supportAtomic && params.supportAtomic !== '0'
+        ? `,{"amount":${params.supportAtomic},"address":${JSON.stringify(params.supportAddress)}}`
+        : '';
     const body =
       `{"jsonrpc":"2.0","id":"0","method":"transfer","params":{` +
-      `"destinations":[{"amount":${params.amountAtomic},"address":${JSON.stringify(params.address)}}],` +
+      `"destinations":[{"amount":${params.amountAtomic},"address":${JSON.stringify(params.address)}}${support}],` +
       `"account_index":${params.accountIndex},"priority":${params.priority},` +
       `"get_tx_key":true,"do_not_relay":${params.doNotRelay ? 'true' : 'false'}${note}}}`;
 

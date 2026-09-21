@@ -9,6 +9,7 @@ logs/
 .rpc-credentials
 node-address.txt
 price-source.txt
+support-address.txt
 *.log
 
 # wallets and keys — never commit these

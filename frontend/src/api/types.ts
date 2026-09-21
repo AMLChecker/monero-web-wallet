@@ -128,7 +128,16 @@ export type PreparedSend = {
   feeEstimated: boolean;
   totalAtomic: string | null;
   priority: number;
+  support: SupportInfo;
   expiresAt: number;
+};
+
+/** Optional, opt-in developer support included in the same transaction. */
+export type SupportInfo = {
+  enabled: boolean;
+  percent: number;
+  address: string | null;
+  amountAtomic: string;
 };
 
 export type SentTransaction = {
@@ -136,6 +145,7 @@ export type SentTransaction = {
   feeAtomic: string | null;
   amountAtomic: string;
   address: string;
+  support?: SupportInfo;
   sentAt: number;
 };
 

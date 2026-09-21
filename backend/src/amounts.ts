@@ -9,6 +9,28 @@ export const ATOMIC_UNITS_PER_XMR = 1_000_000_000_000n;
 /** Maximum supply guard: total Monero supply is far below this. */
 const MAX_ATOMIC = 10n ** 20n;
 
+/** Percentages accepted for the optional developer support (per transfer). */
+export const SUPPORT_PERCENT_MAX = 5;
+export const SUPPORT_PERCENT_OPTIONS = [0, 0.5, 1] as const;
+
+/** Clamps a support percentage to the supported range. */
+export function clampSupportPercent(value: unknown): number {
+  const parsed = typeof value === 'number' ? value : Number(value);
+  if (!Number.isFinite(parsed) || parsed <= 0) return 0;
+  return Math.min(SUPPORT_PERCENT_MAX, Math.round(parsed * 100) / 100);
+}
+
+/**
+ * Optional support amount for a transfer, computed with BigInt and floored, so the
+ * sender never pays more than the chosen percentage. Zero means "no support".
+ */
+export function computeSupportAmount(amountAtomic: bigint, percent: number): bigint {
+  const clamped = clampSupportPercent(percent);
+  if (clamped <= 0 || amountAtomic <= 0n) return 0n;
+  const basisPoints = BigInt(Math.round(clamped * 100));
+  return (amountAtomic * basisPoints) / 10_000n;
+}
+
 /** Converts a user supplied decimal XMR string ("0.25") into atomic units. */
 export function parseXmrToAtomic(value: unknown): bigint {
   if (typeof value === 'number') {

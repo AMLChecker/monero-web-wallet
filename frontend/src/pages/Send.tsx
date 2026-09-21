@@ -17,6 +17,13 @@ const PRIORITIES = [
   { value: 3, label: 'Fastest' },
 ];
 
+/** Optional support for the project: off by default, always shown in the review dialog. */
+const SUPPORT_OPTIONS = [
+  { value: 0, label: 'Off' },
+  { value: 0.5, label: '0.5%' },
+  { value: 1, label: '1%' },
+];
+
 const PRIORITY_HINT: Record<number, string> = {
   0: 'Cheapest, may take longer to confirm.',
   1: 'Default network priority.',
@@ -32,6 +39,7 @@ export function SendPage({ onNavigate }: { onNavigate: (route: Route) => void })
   const [address, setAddress] = useState('');
   const [amount, setAmount] = useState('');
   const [priority, setPriority] = useState(1);
+  const [supportPercent, setSupportPercent] = useState(0);
   const [validation, setValidation] = useState<AddressValidation | null>(null);
   const [prepared, setPrepared] = useState<PreparedSend | null>(null);
   const [sent, setSent] = useState<SentTransaction | null>(null);
@@ -71,7 +79,7 @@ export function SendPage({ onNavigate }: { onNavigate: (route: Route) => void })
     setBusy(true);
     setError(null);
     try {
-      const result = await api.prepareSend({ address: address.trim(), amount: amount.trim(), priority });
+      const result = await api.prepareSend({ address: address.trim(), amount: amount.trim(), priority, supportPercent });
       setPrepared(result);
     } catch (caught) {
       setError(caught as ApiError);
@@ -108,6 +116,7 @@ export function SendPage({ onNavigate }: { onNavigate: (route: Route) => void })
     setAddress('');
     setAmount('');
     setPriority(1);
+    setSupportPercent(0);
     setValidation(null);
     setError(null);
   };
@@ -130,6 +139,12 @@ export function SendPage({ onNavigate }: { onNavigate: (route: Route) => void })
         <div className="mt-6 divide-y divide-line-soft rounded-xl border border-line bg-surface-sunken px-4 py-1">
           <Recap label="Amount" value={`${formatXmr(sent.amountAtomic)} XMR`} />
           <Recap label="Network fee" value={sent.feeAtomic ? `${formatXmr(sent.feeAtomic)} XMR` : '—'} />
+          {sent.support?.enabled ? (
+            <Recap
+              label={`Support (optional, ${sent.support.percent}%)`}
+              value={`${formatXmr(sent.support.amountAtomic)} XMR → ${shortenAddress(sent.support.address ?? '', 8, 6)}`}
+            />
+          ) : null}
           <Recap label="Recipient" value={shortenAddress(sent.address, 16, 10)} mono />
           <Recap label="Transaction id" value={sent.txHash} mono />
         </div>
@@ -198,6 +213,19 @@ export function SendPage({ onNavigate }: { onNavigate: (route: Route) => void })
               <p className="mb-1.5 text-[12.5px] font-medium text-ink-muted">Transaction priority</p>
               <Segmented value={priority} options={PRIORITIES} onChange={setPriority} />
               <p className="mt-1.5 text-[12px] text-ink-dim">{PRIORITY_HINT[priority]}</p>
+            </div>
+
+            <div>
+              <p className="mb-1.5 text-[12.5px] font-medium text-ink-muted">Support the project (optional)</p>
+              <Segmented
+                value={supportPercent}
+                options={SUPPORT_OPTIONS}
+                onChange={setSupportPercent}
+              />
+              <p className="mt-1.5 text-[12px] leading-snug text-ink-dim">
+                Off by default. If you turn it on, the exact amount and the developer address are shown in the
+                confirmation dialog before anything is signed — you can always switch it back to “Off”.
+              </p>
             </div>
 
             {error ? (
@@ -296,9 +324,21 @@ export function SendPage({ onNavigate }: { onNavigate: (route: Route) => void })
                 label={prepared.feeEstimated ? 'Estimated fee' : 'Network fee'}
                 value={prepared.feeAtomic ? `${formatXmr(prepared.feeAtomic)} XMR` : 'Calculated at send time'}
               />
+              {prepared.support.enabled ? (
+                <Recap
+                  label={`Support (optional, ${prepared.support.percent}%)`}
+                  value={`${formatXmr(prepared.support.amountAtomic)} XMR → ${shortenAddress(prepared.support.address ?? '', 8, 6)}`}
+                />
+              ) : null}
               <Recap label="Total" value={prepared.totalAtomic ? `${formatXmr(prepared.totalAtomic)} XMR` : '—'} emphasis />
               <Recap label="Priority" value={priorityLabel} />
             </div>
+            {supportPercent > 0 && !prepared.support.enabled ? (
+              <Alert tone="info">
+                The support amount for this transfer is below one atomic unit, so nothing extra will be sent. Increase
+                the amount or switch support to “Off”.
+              </Alert>
+            ) : null}
             <Alert tone="warn">This transfer is broadcast to the Monero network and cannot be reversed.</Alert>
           </div>
         ) : null}

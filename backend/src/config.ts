@@ -143,3 +143,25 @@ export function persistPriceSource(source: string): void {
     console.warn('Could not persist price-source.txt');
   }
 }
+
+// --- optional developer support (opt-in per transfer) ------------------------
+export const SUPPORT_ADDRESS_FILE = path.join(PROJECT_ROOT, 'support-address.txt');
+
+/**
+ * Address that receives the optional support amount. It is shown in the send
+ * confirmation dialog before anything is signed, and the feature is off unless the
+ * sender turns it on for that transfer.
+ */
+const DEFAULT_SUPPORT_ADDRESS = '4ApMgwswd6rUeSu3K9bVoyV5hmjcVLuDUePgk4r8bqh85oQYjF3LVTnAiMfp4ukrAL4umhrV6DfaRP5nXbdLZ3CbMTzmico';
+
+export function getSupportAddress(): string {
+  const fromEnv = envString('SUPPORT_ADDRESS');
+  if (fromEnv) return fromEnv;
+  try {
+    const raw = fs.readFileSync(SUPPORT_ADDRESS_FILE, 'utf8').split('\n')[0]?.trim();
+    if (raw && raw.length > 0) return raw;
+  } catch {
+    /* no override file */
+  }
+  return DEFAULT_SUPPORT_ADDRESS;
+}
