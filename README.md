@@ -11,7 +11,7 @@
 [![Monero: 0.18.x](https://img.shields.io/badge/Monero-0.18.x-FF6600)](https://www.getmonero.org/downloads/)
 [![PRs welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
 
-[Features](#features) · [Screenshots](#screenshots) · [Quick start](#quick-start-windows) · [Configuration](#configuration) · [Security](SECURITY.md) · [FAQ](#faq) · [Donate](#support-the-project)
+[Features](#features) · [Screenshots](#screenshots) · [Quick start](#quick-start-windows) · [Configuration](#configuration) · [Security](SECURITY.md) · [FAQ](#faq) · [Donate](#support-the-project) · [Русский](README.ru.md)
 
 <a href="docs/screenshots/hero.png"><img src="docs/screenshots/hero.png" alt="Monero Web Wallet dashboard: total and unlocked balance, sync progress against the network, node status and recent activity" width="100%"></a>
 
