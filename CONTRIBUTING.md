@@ -47,6 +47,22 @@ cd frontend && npm run dev
 Short imperative subject lines (`fix: keep the digest nonce on one socket`) are
 preferred; add a body when the reasoning is not obvious.
 
+## Branch protection and dependency updates
+
+`main` is protected: force pushes and branch deletion are blocked, and the `build`
+status check (backend build → backend tests → frontend build → dependency audits) must
+pass before a pull request can be merged. Maintainers can still push directly;
+everyone else contributes through a fork and a pull request, which is the normal
+GitHub flow.
+
+Dependabot keeps dependencies fresh conservatively:
+
+- **minor and patch** updates arrive grouped into one pull request per package, weekly;
+- **GitHub Actions** updates arrive grouped, monthly;
+- **major** version bumps are intentionally not automated — do them on purpose, in
+  their own pull request, with the test suite green (a tailwind or vite major has real
+  chances of breaking the build, which CI will show immediately).
+
 ## License
 
 By contributing you agree that your work is released under the MIT license of this
