@@ -1,20 +1,45 @@
+# Dependency updates are deliberately conservative for a wallet: monthly/weekly
+# minor and patch bumps come as one grouped pull request per package, while major
+# upgrades stay manual so they can be reviewed and tested on purpose.
 version: 2
 updates:
   - package-ecosystem: npm
     directory: /backend
     schedule:
       interval: weekly
-    open-pull-requests-limit: 5
+    open-pull-requests-limit: 3
     labels:
       - dependencies
+    ignore:
+      - dependency-name: '*'
+        update-types:
+          - version-update:semver-major
+    groups:
+      backend-minor-and-patch:
+        patterns:
+          - '*'
+        update-types:
+          - minor
+          - patch
 
   - package-ecosystem: npm
     directory: /frontend
     schedule:
       interval: weekly
-    open-pull-requests-limit: 5
+    open-pull-requests-limit: 3
     labels:
       - dependencies
+    ignore:
+      - dependency-name: '*'
+        update-types:
+          - version-update:semver-major
+    groups:
+      frontend-minor-and-patch:
+        patterns:
+          - '*'
+        update-types:
+          - minor
+          - patch
 
   - package-ecosystem: github-actions
     directory: /
@@ -22,3 +47,7 @@ updates:
       interval: monthly
     labels:
       - dependencies
+    groups:
+      github-actions:
+        patterns:
+          - '*'
