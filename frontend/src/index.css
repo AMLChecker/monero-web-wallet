@@ -1,0 +1,92 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    color-scheme: dark;
+  }
+
+  html {
+    height: 100%;
+  }
+
+  body,
+  #root {
+    min-height: 100%;
+  }
+
+  body {
+    @apply bg-app text-ink font-sans antialiased;
+    background-image: radial-gradient(1200px 600px at 80% -10%, rgba(255, 102, 0, 0.05), transparent 60%);
+    background-attachment: fixed;
+  }
+
+  body {
+    overscroll-behavior-y: none;
+  }
+
+  ::selection {
+    background: rgba(255, 102, 0, 0.28);
+  }
+
+  /* Focus ring only on controls that carry a rounded shape themselves.
+     Inputs are focused through their wrapper (focus-within), so the native
+     rectangular outline must never be drawn inside the rounded field. */
+  *:focus-visible {
+    outline: none;
+  }
+
+  a:focus-visible,
+  button:focus-visible,
+  [role='button']:focus-visible,
+  [role='tab']:focus-visible,
+  summary:focus-visible {
+    @apply ring-2 ring-accent/50 ring-offset-0;
+  }
+
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: #2f2f34 transparent;
+  }
+
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: #2f2f34;
+    border-radius: 999px;
+    border: 3px solid transparent;
+    background-clip: content-box;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: #3f3f46;
+    background-clip: content-box;
+  }
+}
+
+@layer components {
+  .num {
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: 'tnum' 1, 'ss01' 1;
+  }
+
+  .card {
+    @apply rounded-2xl border border-line bg-surface shadow-soft;
+  }
+
+  .label-caps {
+    @apply text-[11px] font-medium uppercase tracking-[0.14em] text-ink-dim;
+  }
+
+  .mono-address {
+    @apply font-mono text-[12.5px] leading-relaxed tracking-tight break-all;
+  }
+
+  .divider {
+    @apply h-px w-full bg-line-soft;
+  }
+}
