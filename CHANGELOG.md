@@ -7,6 +7,19 @@ project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [1.0.5] - 2026-09-22
+
+### Changed
+
+- The release package (`monero-web-wallet-<version>.zip`) now bundles the three official Monero
+  binaries — `monero-wallet-rpc.exe`, `monerod.exe` and `monero-wallet-cli.exe`, version
+  **0.18.5.1 (Fluorine Fermi)**, byte for byte from getmonero.org. Unpacking the archive and
+  running `Start.bat` is now the whole installation; the only remaining step on a fresh machine
+  is Node.js. Their licence and provenance are documented in
+  [THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md).
+- Only one archive is published per release: the complete package. The separate web-UI archive
+  is gone, so there is nothing to choose between.
+
 ## [1.0.4] - 2026-09-22
 
 ### Added
@@ -113,7 +126,8 @@ project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   password check, and a responsive dark interface driven by the official
   `monero-wallet-rpc`. Windows one-click launcher (`Start.bat` / `Stop.bat`).
 
-[Unreleased]: https://github.com/AMLChecker/monero-web-wallet/compare/v1.0.4...HEAD
+[Unreleased]: https://github.com/AMLChecker/monero-web-wallet/compare/v1.0.5...HEAD
+[1.0.5]: https://github.com/AMLChecker/monero-web-wallet/compare/v1.0.4...v1.0.5
 [1.0.4]: https://github.com/AMLChecker/monero-web-wallet/compare/v1.0.3...v1.0.4
 [1.0.3]: https://github.com/AMLChecker/monero-web-wallet/compare/v1.0.2...v1.0.3
 [1.0.2]: https://github.com/AMLChecker/monero-web-wallet/compare/v1.0.1...v1.0.2

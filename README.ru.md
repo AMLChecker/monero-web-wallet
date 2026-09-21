@@ -72,7 +72,11 @@
 - **Windows 10/11** для запуска через `Start.bat` (backend и фронтенд кроссплатформенные — см. ручную установку).
 - **Node.js 18+**.
 - **Официальные бинарники Monero** рядом с `Start.bat`: `monero-wallet-rpc.exe`, `monero-wallet-cli.exe`,
-  `monerod.exe` — скачать на <https://www.getmonero.org/downloads/>. В репозиторий они не входят.
+  `monerod.exe` — скачать на <https://www.getmonero.org/downloads/>. В репозиторий они не входят, но
+  в архиве релиза `monero-web-wallet-<версия>.zip` со
+  [страницы релизов](https://github.com/AMLChecker/monero-web-wallet/releases) они уже лежат
+  (без изменений, v0.18.5.1 — см. [THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md)), так что
+  распаковать архив и есть вся установка.
 - Доступный демон Monero: свой `monerod` (рекомендуется) или публичный узел.
 
 ## Быстрый старт (Windows)

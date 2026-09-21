@@ -200,13 +200,18 @@ is in [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
   `monero-wallet-rpc.exe`, `monero-wallet-cli.exe`, `monerod.exe` — download from
   <https://www.getmonero.org/downloads/> or
   <https://github.com/monero-project/monero/releases>.
-  They are **not** part of this repository.
+  They are **not** part of this repository, but the release archive
+  `monero-web-wallet-<version>.zip` from the
+  [releases page](https://github.com/AMLChecker/monero-web-wallet/releases) already contains all
+  three (unmodified, v0.18.5.1 — see [THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md)), so
+  unpacking that archive is the whole installation.
 - A reachable Monero daemon: your own `monerod` (recommended) or a remote node.
 
 ## Quick start (Windows)
 
 ```text
-1. Put monero-wallet-rpc.exe, monero-wallet-cli.exe and monerod.exe next to Start.bat
+1. Unpack monero-web-wallet-<version>.zip (it already contains the Monero binaries),
+   or put monero-wallet-rpc.exe, monero-wallet-cli.exe and monerod.exe next to Start.bat
 2. Double-click Start.bat
 3. Your browser opens http://127.0.0.1:18082/#/welcome
 4. Click "Open main" (or "Create New Wallet") and enter your wallet password
@@ -646,8 +651,9 @@ Already shipped: [#2](https://github.com/AMLChecker/monero-web-wallet/issues/2) 
 
 ## License
 
-[MIT](LICENSE). The Monero binaries referenced by this project are distributed by the
-Monero Project under their own license and are not included in this repository.
+[MIT](LICENSE). The Monero binaries used by this project are distributed by the Monero Project
+under their own (BSD 3-Clause) license: they are not part of this repository, but the release
+archive ships them unmodified. See [THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md).
 
 ---
 
