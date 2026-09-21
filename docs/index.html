@@ -1,0 +1,325 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Monero Web Wallet — self-hosted non-custodial Monero (XMR) wallet</title>
+    <meta
+      name="description"
+      content="Monero Web Wallet is a free, self-hosted web wallet for Monero (XMR) with a dark responsive UI, powered by the official monero-wallet-rpc. Keys stay on your machine, sending is reviewed before broadcast, Windows quick start."
+    />
+    <meta
+      name="keywords"
+      content="monero web wallet, monero-wallet-rpc, self-hosted monero wallet, non-custodial monero wallet, xmr wallet, monero wallet for windows, monero gui, privacy wallet, monero node, react monero wallet"
+    />
+    <meta name="color-scheme" content="dark" />
+    <link rel="canonical" href="https://amlchecker.github.io/monero-web-wallet/" />
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='32' r='29' fill='none' stroke='%23FF6600' stroke-width='5'/%3E%3Cpath d='M17 45V21h6l9 11 9-11h6v24h-5V30l-10 12-10-12v15z' fill='%23FF6600'/%3E%3C/svg%3E" />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Monero Web Wallet — self-hosted non-custodial XMR wallet" />
+    <meta
+      property="og:description"
+      content="A dark, responsive web wallet for Monero driven by the official monero-wallet-rpc. Your keys, your node, explicit fee review before every transfer."
+    />
+    <meta property="og:image" content="https://amlchecker.github.io/monero-web-wallet/social-preview.png" />
+    <meta property="og:url" content="https://amlchecker.github.io/monero-web-wallet/" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Monero Web Wallet — self-hosted non-custodial XMR wallet" />
+    <meta name="twitter:image" content="https://amlchecker.github.io/monero-web-wallet/social-preview.png" />
+
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "SoftwareApplication",
+        "name": "Monero Web Wallet",
+        "alternateName": "monero-web-wallet",
+        "applicationCategory": "FinanceApplication",
+        "operatingSystem": "Windows 10, Windows 11, Linux, macOS",
+        "description": "Self-hosted, non-custodial web wallet for Monero (XMR) powered by the official monero-wallet-rpc, with a dark responsive UI and two-phase transaction sending.",
+        "url": "https://amlchecker.github.io/monero-web-wallet/",
+        "codeRepository": "https://github.com/AMLChecker/monero-web-wallet",
+        "license": "https://github.com/AMLChecker/monero-web-wallet/blob/main/LICENSE",
+        "programmingLanguage": ["TypeScript", "React"],
+        "keywords": "monero, xmr, web wallet, self-hosted, non-custodial, monero-wallet-rpc, privacy, Windows",
+        "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+        "isAccessibleForFree": true
+      }
+    </script>
+
+    <style>
+      :root {
+        --bg: #09090b;
+        --surface: #111113;
+        --line: #27272a;
+        --accent: #ff6600;
+        --accent-soft: #ff8a3d;
+        --text: #fafafa;
+        --muted: #a1a1aa;
+        --dim: #71717a;
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--text);
+        font-family: Inter, "Segoe UI Variable Display", "Segoe UI", system-ui, sans-serif;
+        line-height: 1.6;
+        background-image: radial-gradient(1100px 520px at 78% -12%, rgba(255, 102, 0, 0.07), transparent 60%);
+        background-attachment: fixed;
+      }
+      a { color: var(--accent-soft); text-decoration: none; }
+      a:hover { text-decoration: underline; }
+      .wrap { width: 100%; max-width: 1120px; margin: 0 auto; padding: 0 20px; }
+      header.top {
+        position: sticky; top: 0; z-index: 10;
+        border-bottom: 1px solid var(--line);
+        background: rgba(9, 9, 11, 0.9);
+        backdrop-filter: blur(8px);
+      }
+      header.top .wrap { display: flex; align-items: center; gap: 18px; height: 62px; }
+      .brand { display: flex; align-items: center; gap: 10px; font-size: 13px; letter-spacing: 0.16em; text-transform: uppercase; }
+      .brand svg { width: 26px; height: 26px; color: var(--accent); }
+      nav.links { margin-left: auto; display: flex; gap: 18px; font-size: 14px; color: var(--muted); }
+      nav.links a { color: var(--muted); }
+      h1 { font-size: clamp(30px, 4.4vw, 50px); line-height: 1.12; margin: 0 0 14px; letter-spacing: -0.02em; }
+      h2 { font-size: clamp(22px, 2.4vw, 30px); margin: 0 0 10px; letter-spacing: -0.01em; }
+      h3 { font-size: 17px; margin: 0 0 6px; }
+      p.lead { font-size: clamp(16px, 1.6vw, 19px); color: var(--muted); max-width: 62ch; margin: 0 0 26px; }
+      section { padding: 62px 0; border-top: 1px solid var(--line); }
+      section.hero { border-top: 0; padding-top: 54px; }
+      .buttons { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 34px; }
+      .btn {
+        display: inline-flex; align-items: center; gap: 8px;
+        padding: 13px 22px; border-radius: 12px; font-size: 15px; font-weight: 600;
+        border: 1px solid var(--line); background: #16161a; color: var(--text);
+      }
+      .btn.primary { background: var(--accent); border-color: var(--accent); color: #0b0b0c; }
+      .btn:hover { text-decoration: none; border-color: #3f3f46; }
+      .btn.primary:hover { background: var(--accent-soft); border-color: var(--accent-soft); }
+      img.shot { width: 100%; border-radius: 16px; border: 1px solid var(--line); display: block; }
+      .grid { display: grid; gap: 18px; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); }
+      .card { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 20px; }
+      .card p { margin: 0; color: var(--muted); font-size: 14.5px; }
+      ul.checks { list-style: none; padding: 0; margin: 0; display: grid; gap: 10px; }
+      ul.checks li { color: var(--muted); font-size: 15px; padding-left: 26px; position: relative; }
+      ul.checks li::before { content: "\2713"; position: absolute; left: 0; color: var(--accent); font-weight: 700; }
+      pre {
+        background: #0d0d0f; border: 1px solid var(--line); border-radius: 14px;
+        padding: 18px; overflow-x: auto; font-family: "Cascadia Mono", Consolas, ui-monospace, monospace;
+        font-size: 13.5px; color: #e4e4e7;
+      }
+      .shots { display: grid; gap: 14px; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); }
+      .shots figure { margin: 0; }
+      .shots figcaption { color: var(--dim); font-size: 13px; margin-top: 8px; }
+      details { border: 1px solid var(--line); border-radius: 14px; padding: 14px 18px; background: var(--surface); }
+      details + details { margin-top: 10px; }
+      summary { cursor: pointer; font-weight: 600; }
+      details p { color: var(--muted); margin: 10px 0 0; }
+      .donate { display: grid; gap: 22px; grid-template-columns: 220px 1fr; align-items: center; }
+      .donate img { width: 100%; border-radius: 14px; background: #fff; padding: 8px; }
+      code.addr { display: block; background: #0d0d0f; border: 1px solid var(--line); border-radius: 12px; padding: 14px; font-size: 12.5px; word-break: break-all; color: #e4e4e7; }
+      footer { border-top: 1px solid var(--line); padding: 34px 0 60px; color: var(--dim); font-size: 13.5px; }
+      @media (max-width: 700px) {
+        nav.links { display: none; }
+        .donate { grid-template-columns: 1fr; }
+      }
+    </style>
+  </head>
+  <body>
+    <header class="top">
+      <div class="wrap">
+        <span class="brand">
+          <svg viewBox="0 0 64 64" aria-hidden="true">
+            <circle cx="32" cy="32" r="28.5" fill="none" stroke="currentColor" stroke-width="5" />
+            <path d="M17 45.5V20.5h5.6l9.4 11.4 9.4-11.4H47v25h-4.6V29.2L32 41.9 21.6 29.2v16.3z" fill="currentColor" />
+          </svg>
+          Monero Web Wallet
+        </span>
+        <nav class="links">
+          <a href="#features">Features</a>
+          <a href="#security">Security</a>
+          <a href="#start">Quick start</a>
+          <a href="#faq">FAQ</a>
+          <a href="https://github.com/AMLChecker/monero-web-wallet">GitHub</a>
+          <a href="#donate">Donate</a>
+        </nav>
+      </div>
+    </header>
+
+    <section class="hero">
+      <div class="wrap">
+        <h1>Monero Web Wallet — a self-hosted, non-custodial XMR wallet</h1>
+        <p class="lead">
+          A dark, responsive web wallet for Monero (XMR) powered by the official
+          <strong>monero-wallet-rpc</strong>. Everything runs on your own computer: your keys stay in your wallet file,
+          your node stays your choice, and every payment is reviewed with its exact fee before it is broadcast.
+          No accounts, no tracking, no third-party servers.
+        </p>
+        <div class="buttons">
+          <a class="btn primary" href="https://github.com/AMLChecker/monero-web-wallet">View on GitHub</a>
+          <a class="btn" href="https://github.com/AMLChecker/monero-web-wallet/releases">Download / releases</a>
+          <a class="btn" href="https://github.com/AMLChecker/monero-web-wallet#quick-start-windows">How to run it</a>
+        </div>
+        <img class="shot" src="screenshots/hero.png" alt="Monero Web Wallet dashboard: total and unlocked balance, sync progress, node status and recent activity" />
+      </div>
+    </section>
+
+    <section id="features">
+      <div class="wrap">
+        <h2>What it does</h2>
+        <p class="lead">A real wallet interface on top of the official Monero binaries — not a mock-up and not a hosted service.</p>
+        <div class="grid">
+          <div class="card">
+            <h3>Balances and sync</h3>
+            <p>Total, unlocked and locked XMR, plus wallet height against network height with a live progress bar.</p>
+          </div>
+          <div class="card">
+            <h3>Two-phase sending</h3>
+            <p>The transaction is built and signed locally, you review the exact network fee, and only then is it relayed to the network.</p>
+          </div>
+          <div class="card">
+            <h3>Full history</h3>
+            <p>Received, sent, pending and failed transfers with confirmations, lock state, notes and a details dialog.</p>
+          </div>
+          <div class="card">
+            <h3>Subaddresses with QR</h3>
+            <p>Create labeled subaddresses, switch between them, copy them and show a QR code for any of them.</p>
+          </div>
+          <div class="card">
+            <h3>Node control</h3>
+            <p>See daemon status, latency and sync progress, and switch between your local monerod and a remote node at runtime.</p>
+          </div>
+          <div class="card">
+            <h3>Recovery backup</h3>
+            <p>Export the 25-word phrase only after re-entering the wallet password; it is never logged or stored.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="security">
+      <div class="wrap">
+        <h2>Security model</h2>
+        <p class="lead">The browser never touches your keys, and the wallet RPC is never exposed to the network.</p>
+        <ul class="checks">
+          <li>monero-wallet-rpc binds to 127.0.0.1 with a fresh random RPC login on every launch.</li>
+          <li>The web UI talks only to a local backend; it never receives RPC credentials and never talks to the wallet RPC port.</li>
+          <li>Your wallet password is never written to disk, logs, cookies or localStorage.</li>
+          <li>Amounts are handled as atomic units in BigInt — floating point is never used for money.</li>
+          <li>The backend rejects requests with a non-loopback Host or Origin header (DNS-rebinding protection).</li>
+          <li>Nothing is broadcast without an explicit confirmation step; cancelling discards the prepared transaction.</li>
+        </ul>
+        <p class="lead" style="margin-top: 22px">
+          Details: <a href="https://github.com/AMLChecker/monero-web-wallet/blob/main/SECURITY.md">SECURITY.md</a> ·
+          <a href="https://github.com/AMLChecker/monero-web-wallet/blob/main/docs/ARCHITECTURE.md">architecture notes</a>
+        </p>
+      </div>
+    </section>
+
+    <section id="start">
+      <div class="wrap">
+        <h2>Quick start (Windows)</h2>
+        <p class="lead">
+          You need Node.js 18+ and the official Monero binaries (`monero-wallet-rpc.exe`, `monero-wallet-cli.exe`,
+          `monerod.exe`) in the project folder. They are not bundled with the repository.
+        </p>
+        <pre><code>1. Put the Monero binaries next to Start.bat
+2. Double-click Start.bat
+3. Your browser opens http://127.0.0.1:18082
+4. Click "Open main" (or "Create New Wallet") and enter your wallet password</code></pre>
+        <p class="lead" style="margin: 22px 0 0">
+          Linux and macOS work too — run your platform's <code>monero-wallet-rpc</code>, then the Node backend and the
+          Vite or built frontend. See the
+          <a href="https://github.com/AMLChecker/monero-web-wallet#manual-setup-any-os">manual setup</a> section.
+        </p>
+      </div>
+    </section>
+
+    <section id="screens">
+      <div class="wrap">
+        <h2>Screenshots</h2>
+        <p class="lead">Taken with a freshly created demo wallet that holds no funds.</p>
+        <div class="shots">
+          <figure>
+            <img class="shot" src="screenshots/send.png" alt="Send Monero form with address validation, amount and fee review" />
+            <figcaption>Send — address validation, priority, exact fee review</figcaption>
+          </figure>
+          <figure>
+            <img class="shot" src="screenshots/receive.png" alt="Receive page with QR code and labeled subaddresses" />
+            <figcaption>Receive — QR code and labeled subaddresses</figcaption>
+          </figure>
+          <figure>
+            <img class="shot" src="screenshots/transactions.png" alt="Transaction history with confirmations and transaction ids" />
+            <figcaption>Transactions — history with confirmations</figcaption>
+          </figure>
+          <figure>
+            <img class="shot" src="screenshots/settings.png" alt="Settings: wallet, node address, lock wallet and recovery phrase backup" />
+            <figcaption>Settings — node, security, backups</figcaption>
+          </figure>
+        </div>
+      </div>
+    </section>
+
+    <section id="faq">
+      <div class="wrap">
+        <h2>Frequently asked questions</h2>
+        <details>
+          <summary>Is this a custodial or hosted wallet?</summary>
+          <p>No. You run it yourself. There is no service operated by the author that could see your keys, and the local API refuses connections from other machines.</p>
+        </details>
+        <details>
+          <summary>Where are my private keys stored?</summary>
+          <p>In your own Monero wallet file (<code>&lt;name&gt;</code> and <code>&lt;name&gt;.keys</code>), exactly as with the official CLI or GUI. The web interface never stores keys.</p>
+        </details>
+        <details>
+          <summary>Do I need a full Monero node?</summary>
+          <p>No — any reachable daemon works, but running your own <code>monerod</code> is recommended for privacy, because a remote node can see your IP address and request pattern.</p>
+        </details>
+        <details>
+          <summary>Can it open a wallet created by the Monero CLI or GUI?</summary>
+          <p>Yes. Put the wallet files in the wallet directory (or set <code>MONERO_WALLET_DIR</code>), restart, and open the wallet with its password.</p>
+        </details>
+        <details>
+          <summary>Does it support hardware wallets?</summary>
+          <p>Not yet — it drives the software wallet RPC only.</p>
+        </details>
+        <details>
+          <summary>Is it audited?</summary>
+          <p>No. It is a small open-source project: read the code, test with small amounts, and always keep an offline backup of your recovery phrase.</p>
+        </details>
+      </div>
+    </section>
+
+    <section id="donate">
+      <div class="wrap">
+        <h2>Support the project</h2>
+        <p class="lead">Optional — but it funds testing time, hardware for verification and new features.</p>
+        <div class="donate">
+          <img src="screenshots/donate-qr.png" alt="Monero (XMR) donation address QR code" />
+          <div>
+            <p class="lead" style="margin-bottom: 12px">XMR on mainnet (scan the QR or copy the address):</p>
+            <code class="addr">4ApMgwswd6rUeSu3K9bVoyV5hmjcVLuDUePgk4r8bqh85oQYjF3LVTnAiMfp4ukrAL4umhrV6DfaRP5nXbdLZ3CbMTzmico</code>
+            <p style="color: var(--dim); font-size: 13.5px; margin-top: 12px">
+              Send XMR on the Monero mainnet only. Donations are non-refundable. Please never send anything else.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <footer>
+      <div class="wrap">
+        <p>
+          Monero Web Wallet · <a href="https://github.com/AMLChecker/monero-web-wallet">source</a> ·
+          <a href="https://github.com/AMLChecker/monero-web-wallet/blob/main/LICENSE">MIT license</a> ·
+          <a href="https://github.com/AMLChecker/monero-web-wallet/security/advisories/new">report a vulnerability</a>
+        </p>
+        <p>
+          Not affiliated with or endorsed by the Monero Project. Unaudited software — use at your own risk and always
+          keep an offline backup of your recovery phrase.
+        </p>
+      </div>
+    </footer>
+  </body>
+</html>
