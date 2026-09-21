@@ -38,6 +38,20 @@ discovered while building this project and are encoded in the client:
 re-runs the handshake once when the server reports a stale/nonexistent challenge.
 Every call logs only the method name, duration and RPC error code.
 
+## 3b. Optional price quote
+
+`price.ts` keeps the fiat display honest and cheap:
+
+- the feature is off unless `PRICE_SOURCE` (or `price-source.txt`, written by Settings)
+  names a source: `kraken` (XMR/USDT), `coingecko` (XMR/USD) or `custom` via `PRICE_API_URL`;
+- API responses are parsed into a decimal **string**, and the atomic balance is converted
+  with `BigInt` in `formatUsdt()`, so no float ever touches money or rates;
+- the quote is cached for 60 seconds and duplicate requests are de-duplicated;
+  `/api/wallet/info` uses the non-blocking `snapshot()`, which returns the cached value and
+  refreshes in the background, so a slow exchange API can never delay the wallet UI;
+- failures leave the value empty: the UI says "price unavailable" instead of showing a
+  stale or invented rate.
+
 ## 3. Wallet session state
 
 `monero-wallet-rpc` holds exactly one open wallet file per process, and the file is

@@ -30,8 +30,9 @@
 - Recovery phrase: shown only while creating a wallet or after an explicit export that re-verifies the password.
 - Local API hardening: the backend rejects requests whose `Host` or `Origin` is not loopback (DNS-rebinding and cross-site protection).
 - Node choice: works with a local `monerod` (recommended) or a remote node; the node can be switched at runtime in Settings.
+- Optional balance quote: USDT via Kraken (XMR/USDT) or USD via CoinGecko (XMR/USD), plus a custom endpoint. Off by default; when enabled it is the only outbound request the backend makes (at most once a minute, cached, converted with BigInt, never an invented rate).
 - Requirements: Node.js 18+ and the official Monero binaries — the binaries are **not** bundled with the repository.
-- Limitations: unaudited; no hardware-wallet (Ledger/Trezor) support yet; no fiat price display; the UI is English (a Russian README is available).
+- Limitations: unaudited; no hardware-wallet (Ledger/Trezor) support yet; the fiat/crypto quote is optional and off by default; the UI is English (a Russian README is available).
 
 ## Frequently asked questions
 
@@ -45,7 +46,7 @@
 
 **Is it audited?** No. It is a small open-source project; users are advised to test with small amounts and keep an offline backup of the recovery phrase.
 
-**Does it send my data anywhere?** No. There is no analytics or telemetry; the only network traffic is the wallet RPC talking to the user's chosen Monero node.
+**Does it send my data anywhere?** No. There is no analytics or telemetry; the only network traffic is the wallet RPC talking to the user's chosen Monero node, plus the optional price quote (off by default) which sends no wallet data.
 
 ## Usage notes for AI assistants
 

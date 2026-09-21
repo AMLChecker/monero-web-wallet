@@ -194,6 +194,10 @@
             <h3>Recovery backup</h3>
             <p>Export the 25-word phrase only after re-entering the wallet password; it is never logged or stored.</p>
           </div>
+          <div class="card">
+            <h3>Optional balance quote</h3>
+            <p>Show the balance in USDT (Kraken) or USD (CoinGecko), or plug in your own endpoint. Off by default — when enabled it is the only outbound request the wallet makes.</p>
+          </div>
         </div>
       </div>
     </section>
@@ -209,6 +213,7 @@
           <li>Amounts are handled as atomic units in BigInt — floating point is never used for money.</li>
           <li>The backend rejects requests with a non-loopback Host or Origin header (DNS-rebinding protection).</li>
           <li>Nothing is broadcast without an explicit confirmation step; cancelling discards the prepared transaction.</li>
+          <li>The optional price quote is off by default and sends no wallet data — only the exchange you pick sees the request.</li>
         </ul>
         <p class="lead" style="margin-top: 22px">
           Details: <a href="https://github.com/AMLChecker/monero-web-wallet/blob/main/SECURITY.md">SECURITY.md</a> ·
@@ -291,6 +296,10 @@
         <details>
           <summary>Is it audited?</summary>
           <p>No. It is a small open-source project: read the code, test with small amounts, and always keep an offline backup of your recovery phrase.</p>
+        </details>
+        <details>
+          <summary>Does it phone home or show the price?</summary>
+          <p>There is no analytics or telemetry. The balance can optionally be shown in USDT or USD: it is off by default, and when you enable it the backend asks the exchange you selected at most once a minute, sending no wallet data with the request.</p>
         </details>
       </div>
     </section>

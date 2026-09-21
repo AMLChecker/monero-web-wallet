@@ -120,6 +120,12 @@ The design goal is simple: **the ergonomics of a modern app, the trust model of 
 - Switch nodes at runtime from Settings (`set_daemon`); the choice is stored in `node-address.txt` for the next launch.
 - Works with a local `monerod` or a remote node; the launcher prefers your local node automatically.
 
+### Price
+
+- Optional balance quote in **USDT** (Kraken XMR/USDT) or **USD** (CoinGecko), switchable in Settings and saved to `price-source.txt`.
+- Off by default: when it is on, this is the only outbound request the wallet makes (at most once a minute, cached, refreshed in the background so the UI never waits).
+- Never invents a rate: if the API is unreachable or not configured, no fiat amount is shown at all. A custom endpoint (`PRICE_API_URL`) is supported too.
+
 ### Interface
 
 - Dark, minimal, premium look: background `#09090B`, cards `#111113`, hairline borders, 14–18 px radii, Monero-orange accent, Lucide icons, tabular numerals for amounts.
@@ -259,6 +265,8 @@ All environment variables are optional.
 | `MONERO_WALLET_DIR` | project root, or `wallets/` when it already contains wallets | Directory passed to `--wallet-dir` |
 | `MONERO_DAEMON_ADDRESS` | `127.0.0.1:18081`, then `node-address.txt` | Monero daemon (`host:port` or `http(s)://host:port`) |
 | `MONERO_SEND_MODE` | `prepare` | `prepare` = build → confirm → relay; `direct` = one confirmed `transfer` |
+| `PRICE_SOURCE` | `none` (or the value in `price-source.txt`) | Balance quote: `none`, `kraken` (XMR/USDT), `coingecko` (XMR/USD), `custom` |
+| `PRICE_API_URL` | empty | Endpoint for the `custom` source; must return JSON with a numeric `price` |
 | `PORT` / `HOST` | `18082` / `127.0.0.1` | Backend bind address (keep it loopback) |
 | `LOG_LEVEL` | `info` | `debug`, `info`, `warn`, `error` |
 | `MONERO_BACKEND_PORT` | `18082` | Backend port used by the Vite dev proxy |
@@ -329,6 +337,7 @@ recommendations are in [SECURITY.md](SECURITY.md).
 | Amounts | Atomic units (`BigInt`) everywhere; no floating point |
 | Local API access | `Host`/`Origin` must be loopback; `no-store`, `nosniff`, `no-referrer` |
 | Accidental sends | Address validated first, explicit confirmation dialog, no auto-send |
+| Optional price API | Off unless you enable it. When on it is the **only** outbound request the backend makes (once a minute, to the exchange you picked) — disable it to stay fully offline |
 
 ## HTTP API
 
@@ -355,6 +364,8 @@ is unreachable from other machines — see [SECURITY.md](SECURITY.md)).
 | `POST` | `/api/wallet/refresh` | Force a wallet refresh |
 | `GET` | `/api/node/status` | Daemon status, height and latency |
 | `POST` | `/api/node/daemon` | Switch the daemon at runtime |
+| `GET` | `/api/price` | Current quote: source, pair, value, timestamps |
+| `POST` | `/api/price/source` | Switch the price source (`none`, `kraken`, `coingecko`, `custom`) |
 
 Errors are always
 `{ "error": { "code": "INSUFFICIENT_FUNDS", "message": "…", "hint": "…" } }` with
@@ -371,6 +382,7 @@ backend/
   src/walletManager.ts        sessions, balances, history, two-phase sending
   src/digestAuth.ts           HTTP digest handshake for the wallet RPC
   src/daemon.ts               daemon probing with stale-while-revalidate cache
+  src/price.ts                optional USDT/USD quote (Kraken, CoinGecko, custom)
   src/amounts.ts              atomic-unit (BigInt) money handling
   src/errors.ts               RPC errors → actionable messages
   src/config.ts               ports, paths, credentials, wallet/node resolution
@@ -401,7 +413,7 @@ running" from "credentials are wrong".
 ### Tests
 
 ```bash
-npm --prefix backend test      # 40 tests, Node's built-in test runner, no extra dependencies
+npm --prefix backend test      # 53 tests, Node's built-in test runner, no extra dependencies
 ```
 
 The suite covers money parsing and formatting (atomic units, no floating point),

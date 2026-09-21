@@ -31,7 +31,30 @@ export type WalletInfo = {
     synchronized: boolean;
   };
   balance: { balanceAtomic: string | null; unlockedAtomic: string | null; fetched: boolean };
+  price: PriceBlock;
+  priceSources: PriceSourceOption[];
   fetchedAt: number;
+};
+
+export type PriceSourceId = 'none' | 'kraken' | 'coingecko' | 'custom';
+
+export type PriceSourceOption = {
+  id: PriceSourceId;
+  label: string;
+  pair: string;
+  url: string | null;
+};
+
+export type PriceBlock = {
+  enabled: boolean;
+  source: PriceSourceId;
+  label: string;
+  pair: string;
+  value: string | null;
+  updatedAt: number | null;
+  error: string | null;
+  totalUsdt: string | null;
+  unlockedUsdt: string | null;
 };
 
 export type WalletFile = { name: string; sizeBytes: number | null; modifiedAt: number | null };
@@ -49,6 +72,7 @@ export type BalanceInfo = {
   lockedAtomic: string;
   blocksToUnlock: number | null;
   timeToUnlock: number | null;
+  price: PriceBlock;
   updatedAt: number;
 };
 

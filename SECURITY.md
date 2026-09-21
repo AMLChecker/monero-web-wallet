@@ -68,3 +68,11 @@ Please do not open a public issue for vulnerabilities that could put funds at ri
   wallet files and use the running services.
 - The backend has no user authentication because it only listens on loopback — do not
   put it behind a reverse proxy or on a public interface.
+
+## Optional price request
+
+Showing the balance in USDT or USD is **off by default**. When enabled in Settings, the
+backend asks the exchange you selected at most once a minute, only to display an
+approximate value; it is the only outbound request this project makes on its own, and no
+wallet data (addresses, balances, transaction ids) is ever sent with it. Disable it to
+keep the wallet fully offline.

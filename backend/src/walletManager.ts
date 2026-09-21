@@ -14,6 +14,7 @@ import { MoneroRpcClient } from './moneroRpc';
 import { AppError, mapRpcError } from './errors';
 import { atomicToBigInt, parseXmrToAtomic } from './amounts';
 import { getDaemonStatus, invalidateDaemonStatus, type DaemonStatus } from './daemon';
+import { formatUsdt, priceService } from './price';
 import { logger } from './logger';
 
 export type WalletSession = {
@@ -370,10 +371,33 @@ export class WalletManager {
         lockedAtomic: (atomicToBigInt(total) - atomicToBigInt(unlocked)).toString(),
         blocksToUnlock: numeric(balance.blocks_to_unlock),
         timeToUnlock: numeric(balance.time_to_unlock),
+        price: await this.priceBlock(total, unlocked),
         updatedAt: Date.now(),
       };
     });
     return force ? produce() : this.cachedRead('balance', 3_000, produce);
+  }
+
+  /**
+   * Converts the balance into the configured quote. The quote is cached for a
+   * minute, so polling never spams the price API, and a failure simply leaves the
+   * values empty — the wallet never invents a rate.
+   */
+  private async priceBlock(balanceAtomic: string | null, unlockedAtomic: string | null) {
+    // snapshot() never waits for the network: the UI gets the cached quote and a
+    // background refresh fills it in on the next poll.
+    const quote = priceService.snapshot();
+    return {
+      enabled: quote.enabled,
+      source: quote.source,
+      label: quote.label,
+      pair: quote.pair,
+      value: quote.value,
+      updatedAt: quote.updatedAt,
+      error: quote.error,
+      totalUsdt: quote.value && balanceAtomic ? formatUsdt(balanceAtomic, quote.value) : null,
+      unlockedUsdt: quote.value && unlockedAtomic ? formatUsdt(unlockedAtomic, quote.value) : null,
+    };
   }
 
   async addresses(force = false) {
@@ -489,6 +513,19 @@ export class WalletManager {
         ? Math.min(100, Math.max(0, (walletHeight / daemonHeight) * 100))
         : null;
 
+    const quote = await priceService.quote();
+    const price = {
+      enabled: quote.enabled,
+      source: quote.source,
+      label: quote.label,
+      pair: quote.pair,
+      value: quote.value,
+      updatedAt: quote.updatedAt,
+      error: quote.error,
+      totalUsdt: quote.value && balanceAtomic ? formatUsdt(balanceAtomic, quote.value) : null,
+      unlockedUsdt: quote.value && unlockedAtomic ? formatUsdt(unlockedAtomic, quote.value) : null,
+    };
+
     return {
       app: { name: 'Monero Web Wallet', version: APP_VERSION, walletDir: WALLET_DIR, sendMode: SEND_MODE },
       rpc: { online: rpc.online, version: rpc.version },
@@ -525,6 +562,8 @@ export class WalletManager {
         synchronized: Boolean(walletHeight !== null && daemonHeight !== null && walletHeight >= daemonHeight - 1),
       },
       balance: { balanceAtomic, unlockedAtomic, fetched: balanceAtomic !== null },
+      price,
+      priceSources: priceService.availableSources(),
       fetchedAt: Date.now(),
     };
   }

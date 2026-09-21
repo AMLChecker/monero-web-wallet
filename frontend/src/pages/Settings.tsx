@@ -6,11 +6,14 @@ import { useToast } from '../components/Toast';
 import { Alert, Button, Card, CardHeader, CopyButton, Input, KeyValue, Modal, StatusPill } from '../components/ui';
 import { formatNumber, percent } from '../lib/format';
 import { useWallet } from '../state/wallet';
+import type { PriceSourceId } from '../api/types';
 
 export function SettingsPage({ onLock, locking }: { onLock: () => void; locking: boolean }) {
   const { info, reload, refreshWallet, refreshing, daemonPending } = useWallet();
   const { push } = useToast();
 
+  const [priceBusy, setPriceBusy] = useState(false);
+  const [priceError, setPriceError] = useState<ApiError | null>(null);
   const [daemonInput, setDaemonInput] = useState('');
   const [daemonBusy, setDaemonBusy] = useState(false);
   const [daemonError, setDaemonError] = useState<ApiError | null>(null);
@@ -55,6 +58,24 @@ export function SettingsPage({ onLock, locking }: { onLock: () => void; locking:
       await reload();
     } finally {
       setPhraseBusy(false);
+    }
+  };
+
+  const applyPriceSource = async (source: PriceSourceId) => {
+    setPriceBusy(true);
+    setPriceError(null);
+    try {
+      const result = await api.setPriceSource(source);
+      push({
+        title: source === 'none' ? 'Price source disabled' : `Price source: ${result.current.label}`,
+        description: result.quote.value ? `XMR = ${result.quote.value} ${result.current.pair.split('/')[1]}` : result.quote.error ?? undefined,
+        tone: source === 'none' || result.quote.value ? 'success' : 'error',
+      });
+      await reload();
+    } catch (caught) {
+      setPriceError(caught as ApiError);
+    } finally {
+      setPriceBusy(false);
     }
   };
 
@@ -159,6 +180,86 @@ export function SettingsPage({ onLock, locking }: { onLock: () => void; locking:
           >
             Apply node address
           </Button>
+        </div>
+      </Card>
+
+      <Card>
+        <CardHeader
+          title="Price"
+          description="Optional quote for your balance. This is the only outbound request the wallet makes."
+          action={
+            <StatusPill tone={info?.price.enabled ? 'ok' : 'neutral'}>{info?.price.enabled ? 'enabled' : 'off'}</StatusPill>
+          }
+        />
+        <div className="flex flex-col gap-4 px-4 py-5 sm:px-5">
+          <div className="flex flex-wrap gap-2">
+            {(info?.priceSources ?? []).map((option) => {
+              const active = option.id === info?.price.source;
+              return (
+                <button
+                  key={option.id}
+                  type="button"
+                  disabled={priceBusy}
+                  onClick={() => void applyPriceSource(option.id)}
+                  className={`rounded-xl border px-3 py-2 text-left text-[12.5px] transition disabled:opacity-60 ${
+                    active
+                      ? 'border-accent/50 bg-accent/[0.08] text-ink'
+                      : 'border-line bg-surface-sunken text-ink-muted hover:border-line/70 hover:text-ink'
+                  }`}
+                >
+                  <span className="block font-medium">{option.label}</span>
+                  {option.pair ? <span className="mt-0.5 block text-[11px] text-ink-dim">{option.pair}</span> : null}
+                </button>
+              );
+            })}
+          </div>
+
+          <div className="divide-y divide-line-soft border-t border-line-soft pt-1">
+            <KeyValue label="XMR price">
+              <span className="num">
+                {info?.price.value
+                  ? `${info.price.value} ${info.price.pair.split('/')[1] ?? ''}`
+                  : info?.price.enabled
+                    ? '—'
+                    : 'disabled'}
+              </span>
+            </KeyValue>
+            <KeyValue label="Balance value">
+              <span className="num">
+                {info?.price.totalUsdt
+                  ? `${info.price.totalUsdt} ${info.price.pair.split('/')[1] ?? ''}`
+                  : '—'}
+              </span>
+            </KeyValue>
+            <KeyValue label="Updated">
+              <span>{info?.price.updatedAt ? new Date(info.price.updatedAt).toLocaleTimeString() : '—'}</span>
+            </KeyValue>
+          </div>
+
+          {info?.price.source === 'custom' && !info.priceSources.find((entry) => entry.id === 'custom')?.url ? (
+            <Alert tone="warn" title="Custom endpoint is not configured">
+              Set <span className="font-mono">PRICE_API_URL</span> to an endpoint returning{' '}
+              <span className="font-mono">{'{ "price": 569.94 }'}</span> and restart the wallet.
+            </Alert>
+          ) : null}
+
+          {priceError ? (
+            <Alert tone="danger" title="Could not change the price source">
+              {priceError.message}
+            </Alert>
+          ) : null}
+
+          {info?.price.error && info.price.enabled ? (
+            <Alert tone="warn" title="Price API problem">
+              {info.price.error}
+            </Alert>
+          ) : null}
+
+          <p className="text-[11.5px] leading-relaxed text-ink-faint">
+            When a source is enabled, the backend asks that API at most once a minute and only to display a rough
+            value. Turn it off to keep the wallet fully offline — the balance itself never depends on it, and the
+            project never invents a rate.
+          </p>
         </div>
       </Card>
 

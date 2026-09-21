@@ -9,6 +9,7 @@ import { logger, logFilePathUsed } from './logger';
 import { MoneroRpcClient } from './moneroRpc';
 import { WalletManager } from './walletManager';
 import { getDaemonStatus, refreshDaemonStatus } from './daemon';
+import { isPriceSourceId, priceService } from './price';
 
 const rpc = new MoneroRpcClient();
 const wallet = new WalletManager(rpc);
@@ -197,6 +198,38 @@ app.post(
   }),
 );
 
+// --- optional price source (USDT / USD) ---------------------------------
+
+app.get(
+  '/api/price',
+  wrap(async (_req, res) => {
+    res.json({
+      quote: await priceService.quote(),
+      current: priceService.current,
+      sources: priceService.availableSources(),
+    });
+  }),
+);
+
+app.post(
+  '/api/price/source',
+  wrap(async (req, res) => {
+    const { source } = body(req);
+    if (!isPriceSourceId(source)) {
+      throw new AppError(
+        400,
+        'INVALID_PRICE_SOURCE',
+        'Unknown price source.',
+        'Supported values: none, kraken, coingecko, custom.',
+      );
+    }
+    const info = priceService.setSource(source);
+    wallet.invalidate();
+    const quote = await priceService.quote(true);
+    res.json({ current: info, quote });
+  }),
+);
+
 // --- sending ------------------------------------------------------------
 
 app.post(
@@ -313,8 +346,15 @@ const server = app.listen(PORT, HOST, () => {
 
 function shutdown(signal: string): void {
   logger.info('shutting down', { signal });
-  server.close(() => process.exit(0));
-  setTimeout(() => process.exit(0), 3_000).unref();
+  // Close the wallet file before exiting: monero-wallet-rpc keeps it locked
+  // otherwise, and the next backend process could not open it again.
+  void wallet
+    .closeWallet()
+    .catch(() => undefined)
+    .finally(() => {
+      server.close(() => process.exit(0));
+      setTimeout(() => process.exit(0), 3_000).unref();
+    });
 }
 
 process.on('SIGINT', () => shutdown('SIGINT'));

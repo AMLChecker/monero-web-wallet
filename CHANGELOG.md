@@ -14,10 +14,16 @@ project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - A comma in an amount sent by an API client is treated as a decimal separator
   (`1,5` means 1.5 XMR) instead of being silently dropped (which turned it into 15 XMR).
 - Amounts smaller than one micro-XMR are no longer displayed as `0.000000`.
+- The backend closes the wallet file on shutdown, so the next start can open the same
+  wallet again (it used to stay locked by `monero-wallet-rpc`).
 
 ### Added
 
-- Backend test suite (40 tests) covering money parsing/formatting, transfer
+- Optional balance quote in **USDT** (Kraken XMR/USDT) or **USD** (CoinGecko), plus a custom
+  endpoint. Off by default, cached for a minute, refreshed in the background, converted with
+  `BigInt`, and never an invented rate when the API is unreachable. Switchable in Settings,
+  stored in `price-source.txt`.
+- Backend test suite (53 tests) covering money parsing/formatting, transfer
   normalisation, RPC error mapping and the digest-auth handshake, wired into CI.
 - GitHub Pages landing page, `llms.txt` and `llms-full.txt` for AI assistants,
   plus `robots.txt` and `sitemap.xml`.

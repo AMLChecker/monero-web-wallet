@@ -113,3 +113,33 @@ export const SEND_MODE: 'prepare' | 'direct' = envString('MONERO_SEND_MODE') ===
 
 export const FRONTEND_DIST = path.join(PROJECT_ROOT, 'frontend', 'dist');
 export const LOGS_DIR = path.join(PROJECT_ROOT, 'logs');
+
+// --- optional price source (USDT / USD) -------------------------------------
+export const PRICE_SOURCE_FILE = path.join(PROJECT_ROOT, 'price-source.txt');
+
+function readPriceSourceFile(): string | undefined {
+  try {
+    const raw = fs.readFileSync(PRICE_SOURCE_FILE, 'utf8').split('\n')[0]?.trim().toLowerCase();
+    return raw && raw.length > 0 ? raw : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
+/**
+ * Price display is off unless the user asks for it: enabling it means one
+ * outbound request to a public exchange API, which the project does not do by
+ * default. Priority: PRICE_SOURCE env -> price-source.txt -> "none".
+ */
+export const PRICE_SOURCE = envString('PRICE_SOURCE')?.toLowerCase() ?? readPriceSourceFile() ?? 'none';
+
+/** Endpoint used by the "custom" price source. Must return JSON with a numeric `price`. */
+export const PRICE_API_URL = envString('PRICE_API_URL') ?? '';
+
+export function persistPriceSource(source: string): void {
+  try {
+    fs.writeFileSync(PRICE_SOURCE_FILE, `${source}\n`, 'utf8');
+  } catch {
+    console.warn('Could not persist price-source.txt');
+  }
+}

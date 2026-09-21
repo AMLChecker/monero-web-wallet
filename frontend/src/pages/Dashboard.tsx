@@ -17,6 +17,9 @@ export function DashboardPage({ onNavigate }: { onNavigate: (route: Route) => vo
   const [selected, setSelected] = useState<TxRecord | null>(null);
 
   const sync = info?.sync;
+  const price = balance.data?.price ?? info?.price ?? null;
+  const quoteCurrency = price?.pair?.includes('/') ? price.pair.split('/')[1] : 'USDT';
+  const priceAge = price?.updatedAt ? formatRelativeTime(Math.floor(price.updatedAt / 1000)) : '';
   const balanceAtomic = balance.data?.balanceAtomic ?? info?.balance.balanceAtomic ?? null;
   const unlockedAtomic = balance.data?.unlockedAtomic ?? info?.balance.unlockedAtomic ?? null;
   const lockedAtomic = balance.data?.lockedAtomic ?? null;
@@ -47,6 +50,9 @@ export function DashboardPage({ onNavigate }: { onNavigate: (route: Route) => vo
                 <span className="text-ink-muted">
                   Unlocked:{' '}
                   <span className="num text-ink">{unlockedAtomic === null ? '—' : `${formatXmr(unlockedAtomic)} XMR`}</span>
+                  {price?.unlockedUsdt ? (
+                    <span className="num text-ink-dim"> ≈ {price.unlockedUsdt} {quoteCurrency}</span>
+                  ) : null}
                 </span>
                 {lockedAtomic && lockedAtomic !== '0' ? (
                   <span className="inline-flex items-center gap-1.5 text-warn">
@@ -55,7 +61,31 @@ export function DashboardPage({ onNavigate }: { onNavigate: (route: Route) => vo
                   </span>
                 ) : null}
               </div>
-              <p className="mt-3 text-[11.5px] text-ink-faint">USD value is hidden — no price API is configured.</p>
+              <div className="mt-3 flex flex-wrap items-baseline gap-x-3 gap-y-1">
+                {price?.enabled && price.totalUsdt ? (
+                  <>
+                    <span className="num text-[15px] text-ink">
+                      ≈ {price.totalUsdt} <span className="text-[11.5px] text-ink-dim">{quoteCurrency}</span>
+                    </span>
+                    <span className="text-[11.5px] text-ink-faint">
+                      {price.label} · {price.pair}
+                      {priceAge ? ` · updated ${priceAge}` : ''}
+                    </span>
+                  </>
+                ) : price?.enabled ? (
+                  <span className="text-[11.5px] text-warn">
+                    Price unavailable — {price.error ?? 'the price API did not answer'}.
+                  </span>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => onNavigate('settings')}
+                    className="text-[11.5px] text-ink-faint underline decoration-dotted underline-offset-2 transition hover:text-ink-muted"
+                  >
+                    Balance in {quoteCurrency} is off — enable a price source in Settings
+                  </button>
+                )}
+              </div>
             </div>
             <StatusPill tone={syncTone} pulse={syncTone === 'warn'}>
               {daemonOffline ? 'Node offline' : sync?.synchronized ? 'Synced' : 'Syncing'}
