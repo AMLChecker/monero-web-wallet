@@ -103,10 +103,9 @@ if not exist "%ROOT%\backend\node_modules" (
 REM The frontend packages are only needed to build the UI. A release ships a prebuilt
 REM frontend\dist which the backend serves, so npm is not touched at all in that case.
 set "NEED_FRONTEND_DEPS=0"
-if not exist "%ROOT%\frontend\node_modules" set "NEED_FRONTEND_DEPS=1"
+if not exist "%ROOT%\frontend\dist\index.html" set "NEED_FRONTEND_DEPS=1"
 if "%REBUILD%"=="1" set "NEED_FRONTEND_DEPS=1"
 if "%DEVMODE%"=="1" set "NEED_FRONTEND_DEPS=1"
-if not exist "%ROOT%\frontend\dist\index.html" set "NEED_FRONTEND_DEPS=1"
 if "!NEED_FRONTEND_DEPS!"=="1" (
   echo [Setup] Installing frontend dependencies - this can take a minute...
   pushd "%ROOT%\frontend"
