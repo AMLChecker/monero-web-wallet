@@ -13,8 +13,20 @@ just as much, because GitHub uses them for search, topic pages and social previe
   Self-hosted Monero web wallet with a dark responsive UI, powered by the official monero-wallet-rpc — non-custodial, local-only, two-phase transaction sending.
   ```
 
-- **Website:** leave empty, or use your fork's Pages URL.
-- **Social preview:** upload `docs/screenshots/dashboard.png` (Settings → General → Social preview).
+- **Website:** leave empty, or use your Pages URL (see below).
+- **Social preview (manual step):** GitHub has no API for this.
+  Settings → General → **Social preview** → *Edit* → upload `docs/social-preview.png`
+  (1280×640, already prepared in this repository). It is what X, Slack, Discord and
+  Telegram show when the link is shared, and it also appears in search results.
+
+## Optional: a landing page on GitHub Pages (extra search surface)
+
+GitHub only indexes repository pages; a Pages site gives the project its own URL that
+ranks independently for queries such as "monero web wallet windows".
+
+1. Add `docs/index.html` (a landing page reusing the README content and screenshots).
+2. Settings → Pages → *Source: Deploy from a branch* → Branch `main`, folder `/docs`.
+3. Set the repository **Website** field to `https://amlchecker.github.io/monero-web-wallet/`.
 
 ## Topics
 
