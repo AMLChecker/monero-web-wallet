@@ -7,6 +7,22 @@ project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [1.0.3] - 2026-09-22
+
+### Fixed
+
+- **Two-phase sending did not work at all with `monero-wallet-rpc` 0.18**: the transfer signed
+  the transaction and returned its hash, key images and fee, but the `tx_metadata` field came
+  back empty, so the wallet refused to continue and nothing could be relayed. The cause is in
+  the RPC contract itself — `tx_metadata` is only filled when the request sets
+  `get_tx_metadata: true` (`COMMAND_RPC_TRANSFER::request` in
+  `wallet_rpc_server_commands_defs.h` defaults it to false), which the backend never sent. The
+  transfer body now asks for the metadata whenever the transaction is prepared instead of
+  relayed, and a regression test pins the flag down. Verified against Monero 0.18.5.1: the
+  same request now returns ~12 KB of metadata instead of an empty string.
+- The "no transaction metadata" error now says that nothing was broadcast and keeps
+  `MONERO_SEND_MODE=direct` as a fallback instead of the only advice.
+
 ## [1.0.2] - 2026-09-21
 
 ### Changed
@@ -73,7 +89,8 @@ project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   password check, and a responsive dark interface driven by the official
   `monero-wallet-rpc`. Windows one-click launcher (`Start.bat` / `Stop.bat`).
 
-[Unreleased]: https://github.com/AMLChecker/monero-web-wallet/compare/v1.0.2...HEAD
+[Unreleased]: https://github.com/AMLChecker/monero-web-wallet/compare/v1.0.3...HEAD
+[1.0.3]: https://github.com/AMLChecker/monero-web-wallet/compare/v1.0.2...v1.0.3
 [1.0.2]: https://github.com/AMLChecker/monero-web-wallet/compare/v1.0.1...v1.0.2
 [1.0.1]: https://github.com/AMLChecker/monero-web-wallet/compare/v1.0.0...v1.0.1
 [1.0.0]: https://github.com/AMLChecker/monero-web-wallet/releases/tag/v1.0.0

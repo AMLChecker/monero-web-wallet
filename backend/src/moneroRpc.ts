@@ -33,6 +33,49 @@ function firstHeader(rawHeaders: string[], name: string): string | null {
  * Every wallet operation in this project goes through this client; the browser
  * never talks to the RPC port and the RPC credentials never leave the backend.
  */
+export type TransferRequest = {
+  address: string;
+  amountAtomic: string;
+  priority: number;
+  accountIndex: number;
+  doNotRelay: boolean;
+  note?: string;
+  /** Optional developer support: a second destination in the same transaction. */
+  supportAddress?: string;
+  supportAtomic?: string;
+};
+
+/**
+ * Builds the `transfer` JSON-RPC body.
+ *
+ * `get_tx_metadata` is what makes a two-phase send possible at all: monero-wallet-rpc
+ * only fills the `tx_metadata` field of its response when the request asks for it
+ * (`COMMAND_RPC_TRANSFER::request` in wallet_rpc_server_commands_defs.h has
+ * `get_tx_metadata` defaulting to false). Without it the wallet still signs the
+ * transaction - hash, key images and fee all come back - and silently drops the
+ * metadata, so `relay_tx` has nothing to relay later.
+ */
+export function buildTransferBody(params: TransferRequest): string {
+  if (!/^\d+$/.test(params.amountAtomic)) {
+    throw new RpcError(-1, 'Internal error: amount must be an integer in atomic units');
+  }
+  if (params.supportAtomic !== undefined && !/^\d+$/.test(params.supportAtomic)) {
+    throw new RpcError(-1, 'Internal error: support amount must be an integer in atomic units');
+  }
+  const note = params.note ? `,"note":${JSON.stringify(params.note)}` : '';
+  const support =
+    params.supportAddress && params.supportAtomic && params.supportAtomic !== '0'
+      ? `,{"amount":${params.supportAtomic},"address":${JSON.stringify(params.supportAddress)}}`
+      : '';
+  return (
+    `{"jsonrpc":"2.0","id":"0","method":"transfer","params":{` +
+    `"destinations":[{"amount":${params.amountAtomic},"address":${JSON.stringify(params.address)}}${support}],` +
+    `"account_index":${params.accountIndex},"priority":${params.priority},` +
+    `"get_tx_key":true,"get_tx_metadata":${params.doNotRelay ? 'true' : 'false'},` +
+    `"do_not_relay":${params.doNotRelay ? 'true' : 'false'}${note}}}`
+  );
+}
+
 export class MoneroRpcClient {
   private challenge: DigestChallenge | null = null;
   private nonceCount = 0;
@@ -301,34 +344,8 @@ export class MoneroRpcClient {
   }
 
   // --- spending ---------------------------------------------------------
-  transfer(params: {
-    address: string;
-    amountAtomic: string;
-    priority: number;
-    accountIndex: number;
-    doNotRelay: boolean;
-    note?: string;
-    /** Optional developer support: a second destination in the same transaction. */
-    supportAddress?: string;
-    supportAtomic?: string;
-  }) {
-    if (!/^\d+$/.test(params.amountAtomic)) {
-      throw new RpcError(-1, 'Internal error: amount must be an integer in atomic units');
-    }
-    if (params.supportAtomic !== undefined && !/^\d+$/.test(params.supportAtomic)) {
-      throw new RpcError(-1, 'Internal error: support amount must be an integer in atomic units');
-    }
-    const note = params.note ? `, "note": ${JSON.stringify(params.note)}` : '';
-    const support =
-      params.supportAddress && params.supportAtomic && params.supportAtomic !== '0'
-        ? `,{"amount":${params.supportAtomic},"address":${JSON.stringify(params.supportAddress)}}`
-        : '';
-    const body =
-      `{"jsonrpc":"2.0","id":"0","method":"transfer","params":{` +
-      `"destinations":[{"amount":${params.amountAtomic},"address":${JSON.stringify(params.address)}}${support}],` +
-      `"account_index":${params.accountIndex},"priority":${params.priority},` +
-      `"get_tx_key":true,"do_not_relay":${params.doNotRelay ? 'true' : 'false'}${note}}}`;
-
+  transfer(params: TransferRequest) {
+    const body = buildTransferBody(params);
     return this.callWithBody<{
       amount: number;
       fee: number;

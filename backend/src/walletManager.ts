@@ -768,8 +768,8 @@ export class WalletManager {
       throw new AppError(
         501,
         'SEND_MODE_UNSUPPORTED',
-        'This wallet RPC build did not return transaction metadata for a two-phase send.',
-        'Set MONERO_SEND_MODE=direct in Start.bat to sign and broadcast in a single confirmed step.',
+        'The wallet RPC signed the transaction but returned no metadata, so it cannot be relayed in a second step.',
+        'The request asks for it with get_tx_metadata=true; if this keeps happening, set MONERO_SEND_MODE=direct in Start.bat to sign and broadcast in one step. Nothing was broadcast.',
       );
     }
 
