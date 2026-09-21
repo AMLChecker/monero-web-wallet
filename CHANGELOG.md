@@ -19,6 +19,10 @@ project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+- `start.sh` and `stop.sh` for Linux and macOS: the same checks as `Start.bat`, a fresh
+  random RPC login, loopback-only wallet RPC, wait-for-ready checks, `--rebuild` and
+  `--dev` modes, PID files in `.run/` and a port-based fallback when stopping. The scripts
+  need only `bash` and `node`.
 - Optional balance quote in **USDT** (Kraken XMR/USDT) or **USD** (CoinGecko), plus a custom
   endpoint. Off by default, cached for a minute, refreshed in the background, converted with
   `BigInt`, and never an invented rate when the API is unreachable. Switchable in Settings,

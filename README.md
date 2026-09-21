@@ -46,6 +46,7 @@ Browser (React UI)  →  Node backend 127.0.0.1:18082  →  monero-wallet-rpc 12
 - [Architecture](#architecture)
 - [Requirements](#requirements)
 - [Quick start (Windows)](#quick-start-windows)
+- [Quick start (Linux and macOS)](#quick-start-linux-and-macos)
 - [Manual setup (any OS)](#manual-setup-any-os)
 - [Configuration](#configuration)
 - [Wallet files and directories](#wallet-files-and-directories)
@@ -181,9 +182,9 @@ is in [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 
 ## Requirements
 
-- **Windows 10/11** for the `Start.bat` launcher. The backend and frontend themselves are
-  cross-platform, so macOS/Linux users can run them manually (see
-  [Manual setup](#manual-setup-any-os)).
+- **Windows 10/11** (`Start.bat`) or **Linux/macOS** (`start.sh` / `stop.sh`). Both
+  launchers do the same work; the backend and frontend are cross-platform and also run
+  manually (see [Manual setup](#manual-setup-any-os)).
 - **Node.js 18+**.
 - **Official Monero CLI binaries** in the project folder:
   `monero-wallet-rpc.exe`, `monero-wallet-cli.exe`, `monerod.exe` — download from
@@ -230,6 +231,29 @@ Start.bat --rebuild    force a rebuild of backend and frontend
 Start.bat --dev        run the Vite dev server on 127.0.0.1:5173 (hot reload)
 Stop.bat               stop all services (by PID file and by port)
 ```
+
+## Quick start (Linux and macOS)
+
+```bash
+# 1. put the official Monero binaries (monero-wallet-rpc, monero-wallet-cli, monerod)
+#    next to start.sh
+./start.sh             # installs/builds what is missing, starts everything, opens the browser
+./stop.sh              # stops the services and frees the ports
+./start.sh --rebuild   # force a rebuild of backend and frontend
+./start.sh --dev       # run the Vite dev server on 127.0.0.1:5173
+```
+
+`start.sh` does exactly what `Start.bat` does: it checks that `monero-wallet-rpc` and
+Node.js 18+ are present, installs npm dependencies and builds when their `dist` folders are
+missing, generates a **fresh random RPC login**, starts `monero-wallet-rpc` on loopback
+(`127.0.0.1`) only, starts the backend that serves the UI, waits for both to answer, and
+opens `http://127.0.0.1:18082`. Everything is configurable with the same environment
+variables as the Windows launcher: `MONERO_RPC_PORT`, `PORT`, `MONERO_WALLET_DIR`,
+`MONERO_DAEMON_ADDRESS`, `MONERO_FALLBACK_NODE`, `MONERO_SEND_MODE`.
+
+Logs go to `logs/wallet-rpc.log` (Monero's own log), `logs/wallet-rpc.out` and
+`logs/backend.out`; PID files are written to `.run/`. The scripts need only `bash` and
+`node` — no `lsof`, `ss` or `curl` required.
 
 ## Manual setup (any OS)
 
@@ -375,6 +399,7 @@ human-readable text instead of raw RPC codes.
 
 ```
 Start.bat / Stop.bat          Windows launcher and shutdown helper
+start.sh / stop.sh            launcher and shutdown helper for Linux and macOS
 wallets/README.md             wallet directory notes
 backend/
   src/server.ts               Express API, static hosting, loopback guards
@@ -436,6 +461,9 @@ Never include your password, recovery phrase or private keys in a report.
 | **Daemon unavailable** | The node is unreachable — start `monerod` or set another node in Settings. |
 | **monero-wallet-rpc cannot see this wallet file** | The RPC process was started with a different `--wallet-dir`. Start everything with `Start.bat`, or align `MONERO_WALLET_DIR`. |
 | **Port 18082/18083 already in use** | An older instance is still running: `Stop.bat` or end the process in Task Manager. |
+| **Windows Defender removed `monero-wallet-rpc.exe`** | Defender classifies the official Monero binaries as potentially unwanted (they contain mining-related strings). Check Windows Security → Protection history, restore the file and add the project folder to Exclusions. This project runs a wallet, it never mines. |
+| **`start.sh` says the wallet RPC did not start** | Look at `logs/wallet-rpc.log` (Monero's own log) and `logs/wallet-rpc.out` — usually a busy port (`MONERO_RPC_PORT`) or a node that cannot be reached. |
+| **`start.sh` says the backend did not answer** | See `logs/backend.log` and `logs/backend.out`; the port can be changed with `PORT=18092 ./start.sh`. |
 | UI shows old heights | Click **Sync now**; a remote node can be slow (latency is shown in Settings). |
 | `npm install` warns about blocked install scripts (`esbuild`) | npm 11+ policy. The Vite build still works; otherwise run `npm install-scripts approve esbuild` inside `frontend`. |
 | Address rejected when sending | The address must be a mainnet Monero address (or subaddress). Integrated addresses and testnet are not supported by the form. |
@@ -514,11 +542,11 @@ shows no fiat amount at all, because the project never invents a rate.
 **Shipped recently**
 
 - **Balance quote in USDT / USD** ([#4](https://github.com/AMLChecker/monero-web-wallet/issues/4)) — Kraken XMR/USDT, CoinGecko XMR/USD or a custom endpoint, off by default. See [Price](#price).
+- **Launcher scripts for Linux and macOS** ([#2](https://github.com/AMLChecker/monero-web-wallet/issues/2)) — `start.sh` / `stop.sh` with the same checks, flags and safety rules as `Start.bat`. See [Quick start (Linux and macOS)](#quick-start-linux-and-macos).
 
 **Planned — contributions welcome** (each links to an issue you can pick up)
 
 - Docker packaging — [#1](https://github.com/AMLChecker/monero-web-wallet/issues/1)
-- Launcher scripts for Linux and macOS — [#2](https://github.com/AMLChecker/monero-web-wallet/issues/2)
 - Translated UI (currently English, Russian docs exist) — [#3](https://github.com/AMLChecker/monero-web-wallet/issues/3)
 - Address book and labeled contacts
 - Integrated addresses and payment IDs in the Receive page
@@ -588,12 +616,11 @@ Please read [CONTRIBUTING.md](CONTRIBUTING.md) before opening a PR — the rules
 **Looking for something to build?** These are open and labelled:
 
 - [#1 Docker packaging](https://github.com/AMLChecker/monero-web-wallet/issues/1) — image + docker-compose for the wallet RPC, backend and UI (`help wanted`)
-- [#2 Launcher scripts for Linux and macOS](https://github.com/AMLChecker/monero-web-wallet/issues/2) — `start.sh` / `stop.sh` equivalent to `Start.bat` (`good first issue`)
 - [#3 UI translations](https://github.com/AMLChecker/monero-web-wallet/issues/3) — extract strings, add Russian (`help wanted`)
 
 Everything labelled [good first issue](https://github.com/AMLChecker/monero-web-wallet/labels/good%20first%20issue) and [help wanted](https://github.com/AMLChecker/monero-web-wallet/labels/help%20wanted) is fair game — comment on the issue if you want to take one, so we do not duplicate work.
 
-Already shipped and waiting for a reviewer instead: [#4](https://github.com/AMLChecker/monero-web-wallet/issues/4) — optional USDT/USD balance quote (see [Price](#price)).
+Already shipped: [#2](https://github.com/AMLChecker/monero-web-wallet/issues/2) — Linux/macOS launchers and [#4](https://github.com/AMLChecker/monero-web-wallet/issues/4) — optional USDT/USD balance quote.
 
 ## License
 

@@ -7,7 +7,7 @@ body:
     attributes:
       value: |
         Please check the roadmap at the end of the [README](https://github.com/AMLChecker/monero-web-wallet#roadmap) first —
-        Docker packaging, Linux/macOS launchers, interface translations, an address book, integrated addresses,
+        Docker packaging, interface translations, an address book, integrated addresses,
         multiple accounts and hardware-wallet support are already listed there (the USDT/USD balance quote has shipped).
   - type: checkboxes
     id: checklist

@@ -56,6 +56,9 @@ if not exist "%ROOT%\monero-wallet-rpc.exe" (
   echo [Error] monero-wallet-rpc.exe was not found in:
   echo         %ROOT%
   echo         Put the official Monero Windows binaries next to Start.bat.
+  echo         Windows Defender sometimes quarantines the official Monero binaries:
+  echo         check Windows Security - Protection history, restore the file and add
+  echo         this folder to Exclusions. This wallet never mines anything.
   goto :fail
 )
 echo [Check] monero-wallet-rpc.exe found

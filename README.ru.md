@@ -87,6 +87,19 @@ Stop.bat                остановить все сервисы
 
 ## Ручная установка (любая ОС)
 
+На Linux и macOS есть свои лаунчеры — они делают то же, что `Start.bat`:
+
+```bash
+./start.sh             # поставит зависимости, соберёт нужное, запустит сервисы и откроет браузер
+./stop.sh              # остановит сервисы и освободит порты
+./start.sh --rebuild   # принудительная пересборка
+./start.sh --dev       # Vite dev-сервер на 127.0.0.1:5173
+```
+
+Порты, каталог кошельков и адрес узла настраиваются теми же переменными, что и в Windows:
+`MONERO_RPC_PORT`, `PORT`, `MONERO_WALLET_DIR`, `MONERO_DAEMON_ADDRESS`. Логи — в `logs/`,
+PID-файлы — в `.run/`.
+
 ```bash
 # 1. официальный wallet RPC
 monero-wallet-rpc --wallet-dir . --rpc-bind-ip 127.0.0.1 --rpc-bind-port 18083 \
@@ -195,7 +208,7 @@ git push origin fix/kratkoe-opisanie
 **Есть открытые задачи с метками:**
 
 - [#1 Docker-упаковка](https://github.com/AMLChecker/monero-web-wallet/issues/1) — образ и docker-compose для wallet RPC, backend и UI (`help wanted`)
-- [#2 Скрипты запуска для Linux и macOS](https://github.com/AMLChecker/monero-web-wallet/issues/2) — `start.sh` / `stop.sh` вместо `Start.bat` (`good first issue`)
+- уже сделано: [#2 Скрипты запуска для Linux и macOS](https://github.com/AMLChecker/monero-web-wallet/issues/2) — `start.sh` / `stop.sh`
 - [#3 Переводы интерфейса](https://github.com/AMLChecker/monero-web-wallet/issues/3) — вынести строки и добавить русский (`help wanted`)
 - уже сделано: [#4 Опциональный курс фиата](https://github.com/AMLChecker/monero-web-wallet/issues/4) — USDT/USD в Settings → Price (ждёт ревью, а не разработки)
 
