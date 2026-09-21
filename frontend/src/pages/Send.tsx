@@ -18,7 +18,12 @@ import { useWallet } from '../state/wallet';
  */
 const NETWORK_PRIORITY = 0;
 
-/** Optional support for the project: off by default, always shown in the review dialog. */
+/**
+ * Support for the project: 0.5% is preselected, Off and 1% are one tap away. Whatever
+ * the choice, the review dialog lists the exact support amount and the destination
+ * address before the transaction is signed.
+ */
+const DEFAULT_SUPPORT_PERCENT = 0.5;
 const SUPPORT_OPTIONS = [
   { value: 0, label: 'Off' },
   { value: 0.5, label: '0.5%' },
@@ -32,7 +37,7 @@ export function SendPage({ onNavigate }: { onNavigate: (route: Route) => void })
 
   const [address, setAddress] = useState('');
   const [amount, setAmount] = useState('');
-  const [supportPercent, setSupportPercent] = useState(0);
+  const [supportPercent, setSupportPercent] = useState(DEFAULT_SUPPORT_PERCENT);
   const [validation, setValidation] = useState<AddressValidation | null>(null);
   const [prepared, setPrepared] = useState<PreparedSend | null>(null);
   const [sent, setSent] = useState<SentTransaction | null>(null);
@@ -113,7 +118,7 @@ export function SendPage({ onNavigate }: { onNavigate: (route: Route) => void })
     setSent(null);
     setAddress('');
     setAmount('');
-    setSupportPercent(0);
+    setSupportPercent(DEFAULT_SUPPORT_PERCENT);
     setValidation(null);
     setError(null);
   };
@@ -205,15 +210,15 @@ export function SendPage({ onNavigate }: { onNavigate: (route: Route) => void })
             />
 
             <div>
-              <p className="mb-1.5 text-[12.5px] font-medium text-ink-muted">Support the project (optional)</p>
+              <p className="mb-1.5 text-[12.5px] font-medium text-ink-muted">Support the project</p>
               <Segmented
                 value={supportPercent}
                 options={SUPPORT_OPTIONS}
                 onChange={setSupportPercent}
               />
               <p className="mt-1.5 text-[12px] leading-snug text-ink-dim">
-                Off by default. If you turn it on, the exact amount and the developer address are shown in the
-                confirmation dialog before anything is signed — you can always switch it back to “Off”.
+                A 0.5% tip is preselected — tap “Off” to send without it. The exact amount and the developer address
+                are always shown in the confirmation dialog before anything is signed.
               </p>
             </div>
 

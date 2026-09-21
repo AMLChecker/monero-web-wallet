@@ -15,8 +15,8 @@ project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
-- Optional per-transfer support for the project: a switch on the Send page (`Off` by default,
-  presets 0.5% / 1%), with the exact support amount and the destination address listed in the
+- Support for the project on the Send page: a **0.5%** tip is preselected (`Off` and `1%` are
+  one tap away), and the exact support amount plus the destination address are listed in the
   confirmation dialog before signing. The address is configurable through `SUPPORT_ADDRESS`.
 
 ## [1.0.1] - 2026-09-21
