@@ -1,0 +1,9 @@
+# Normalise line endings for cross-platform contributors.
+* text=auto eol=lf
+
+# Windows batch files must keep CRLF.
+*.bat text eol=crlf
+
+# Binary assets
+*.png binary
+*.ico binary
