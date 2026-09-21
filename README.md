@@ -396,6 +396,12 @@ running" from "credentials are wrong".
 
 ## Troubleshooting
 
+Still stuck after reading this table? [Open an issue](https://github.com/AMLChecker/monero-web-wallet/issues/new?template=bug_report.yml) —
+the bug template asks for exactly the details needed to help (component, OS, Node and wallet RPC version, node type and the relevant log lines).
+Problems with `Start.bat`, ports or a missing node have their own [setup form](https://github.com/AMLChecker/monero-web-wallet/issues/new?template=setup_help.yml),
+and ideas are welcome in the [feature request form](https://github.com/AMLChecker/monero-web-wallet/issues/new?template=feature_request.yml).
+Never include your password, recovery phrase or private keys in a report.
+
 | Symptom | Cause / fix |
 | --- | --- |
 | **Wallet RPC Offline** | `monero-wallet-rpc.exe` is not running or port 18083 is busy. Run `Stop.bat`, then `Start.bat`; check `logs\wallet-rpc.log`. |
