@@ -168,4 +168,4 @@ Do **not** create a question or answer just to link the project. Instead:
 - [ ] PR to `hundehausen/awesome-monero`
 - [ ] PR to `awesome-selfhosted/awesome-selfhosted`
 - [ ] Answered at least one relevant question on Monero Stack Exchange with disclosure
-- [ ] Release notes for `v1.0.0` linked in every post
+- [ ] Release notes for `v1.0.1` linked in every post

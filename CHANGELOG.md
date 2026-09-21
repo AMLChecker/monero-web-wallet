@@ -7,6 +7,10 @@ project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+Nothing yet.
+
+## [1.0.1] - 2026-09-21
+
 ### Fixed
 
 - New wallets are created at the current chain height (`restore_height`), so a freshly
@@ -45,5 +49,6 @@ project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   password check, and a responsive dark interface driven by the official
   `monero-wallet-rpc`. Windows one-click launcher (`Start.bat` / `Stop.bat`).
 
-[Unreleased]: https://github.com/AMLChecker/monero-web-wallet/compare/v1.0.0...HEAD
+[Unreleased]: https://github.com/AMLChecker/monero-web-wallet/compare/v1.0.1...HEAD
+[1.0.1]: https://github.com/AMLChecker/monero-web-wallet/compare/v1.0.0...v1.0.1
 [1.0.0]: https://github.com/AMLChecker/monero-web-wallet/releases/tag/v1.0.0
