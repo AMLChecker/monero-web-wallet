@@ -9,9 +9,9 @@ project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Changed
 
-- Network priority is fixed to **Low** (the cheapest fee the network accepts) and the
-  priority selector is gone, so there is no level to guess. The API still accepts `priority`
-  `0`–`3` for integrations.
+- The send form no longer shows any transaction priority control: every transfer goes out at
+  **Low**, the cheapest fee the network accepts. The API still accepts `priority` `0`–`3` for
+  integrations.
 
 ### Added
 

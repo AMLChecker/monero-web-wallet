@@ -112,7 +112,7 @@ The design goal is simple: **the ergonomics of a modern app, the trust model of 
 
 - Recipient address validation through `validate_address` (mainnet only) before anything is built.
 - **Two-phase send:** the transaction is built and signed locally with `do_not_relay`, you see the **exact** network fee and the total, and only your explicit confirmation broadcasts it with `relay_tx`.
-- Network priority is fixed to **Low** — the cheapest fee the network accepts — so there is nothing to guess. A "MAX" helper respects locked balances.
+- **No fee-level control:** every transaction is sent at **Low**, the cheapest fee the network accepts, so there is nothing to guess and nothing to configure. A "MAX" helper respects locked balances.
 - **Optional support for the project** — off by default, with 0.5% / 1% presets. When it is on, the confirmation dialog lists the exact support amount and the address it goes to before anything is signed. The address is configurable with `SUPPORT_ADDRESS` (change it if you fork).
 - Clear, human-readable errors instead of raw RPC codes ("Not enough spendable balance", "Wallet RPC cannot reach the Monero daemon", …).
 
