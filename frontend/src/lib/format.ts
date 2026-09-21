@@ -21,7 +21,11 @@ export function formatXmr(value: string | number | bigint | null | undefined, op
   const whole = digits.slice(0, -12);
   const fractionRaw = digits.slice(-12);
   let fraction = fractionRaw.replace(/0+$/, '');
-  if (fraction.length === 0) fraction = '000000';
+  if (fraction.length < 6) {
+    // Keep at least six decimals, but never show a non-zero balance as 0.000000.
+    const firstSignificant = fractionRaw.search(/[1-9]/);
+    fraction = firstSignificant === -1 ? fractionRaw.slice(0, 6) : fractionRaw.slice(0, Math.max(6, firstSignificant + 1));
+  }
   const wholeOut = options.grouping ? groupThousands(whole) : whole;
   return `${negative ? '-' : ''}${wholeOut}.${fraction}`;
 }

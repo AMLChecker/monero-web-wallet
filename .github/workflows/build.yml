@@ -25,11 +25,25 @@ jobs:
           npm ci --no-audit --no-fund
           npm run build
 
+      - name: Backend - test
+        working-directory: backend
+        run: npm test
+
       - name: Frontend - install and build
         working-directory: frontend
         run: |
           npm ci --no-audit --no-fund
           npm run build
+
+      - name: Audit backend dependencies
+        working-directory: backend
+        continue-on-error: true
+        run: npm audit --omit=dev --audit-level=high
+
+      - name: Audit frontend dependencies
+        working-directory: frontend
+        continue-on-error: true
+        run: npm audit --audit-level=high
 
       - name: Upload frontend build
         uses: actions/upload-artifact@v4

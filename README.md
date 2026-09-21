@@ -398,6 +398,17 @@ It prints the configured endpoint, whether credentials are present, a raw handsh
 probe and a couple of RPC calls — the fastest way to distinguish "wallet RPC is not
 running" from "credentials are wrong".
 
+### Tests
+
+```bash
+npm --prefix backend test      # 40 tests, Node's built-in test runner, no extra dependencies
+```
+
+The suite covers money parsing and formatting (atomic units, no floating point),
+transfer normalisation (`get_transfers` buckets, confirmations, locked funds), the RPC
+error mapping table and the digest-auth handshake that `monero-wallet-rpc` requires.
+CI runs it on every push together with both builds.
+
 ## Troubleshooting
 
 Still stuck after reading this table? [Open an issue](https://github.com/AMLChecker/monero-web-wallet/issues/new?template=bug_report.yml) —

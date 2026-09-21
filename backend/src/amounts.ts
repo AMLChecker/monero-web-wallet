@@ -21,7 +21,12 @@ export function parseXmrToAtomic(value: unknown): bigint {
     throw new AppError(400, 'INVALID_AMOUNT', 'Enter a valid amount in XMR.');
   }
 
-  const raw = value.trim().replace(/,/g, '').replace(/\s+/g, '');
+  let raw = value.trim().replace(/\s+/g, '');
+  // A comma is a decimal separator when there is no dot ("1,5" = 1.5) and a
+  // thousands separator when a dot is present ("1,000.50" = 1000.50).
+  if (raw.includes(',')) {
+    raw = raw.includes('.') ? raw.replace(/,/g, '') : raw.replace(',', '.');
+  }
   if (raw.length === 0) {
     throw new AppError(400, 'INVALID_AMOUNT', 'Enter an amount in XMR.');
   }
@@ -75,7 +80,10 @@ export function formatAtomic(value: unknown, options: { grouping?: boolean } = {
 
   let fraction = fractionRaw.replace(/0+$/, '');
   if (fraction.length < 6) {
-    fraction = fractionRaw.slice(0, 6);
+    // Always show at least six decimals, but never hide a non-zero amount:
+    // 0.000000000001 XMR must not be displayed as 0.000000.
+    const firstSignificant = fractionRaw.search(/[1-9]/);
+    fraction = firstSignificant === -1 ? fractionRaw.slice(0, 6) : fractionRaw.slice(0, Math.max(6, firstSignificant + 1));
   }
 
   const wholeOut = options.grouping ? groupThousands(whole) : whole;

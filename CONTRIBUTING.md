@@ -31,6 +31,9 @@ cd frontend && npm run dev
 
 - `npm run build` must pass in **both** `backend` and `frontend` (the Windows launcher
   relies on clean TypeScript builds).
+- `npm --prefix backend test` must pass — the suite covers money parsing and formatting,
+  transfer normalisation, RPC error mapping and the digest-auth handshake. Add a test
+  when you touch any of those.
 - Keep the UI free of mock data: every button must perform a real wallet RPC call.
 - Never log or transmit wallet passwords, seeds, private keys or prepared transaction
   blobs, and never store the wallet password in the browser.

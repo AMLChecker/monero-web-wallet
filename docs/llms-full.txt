@@ -546,9 +546,35 @@ Other ways to help that cost nothing:
 
 ## Contributing
 
-Pull requests are welcome — see [CONTRIBUTING.md](CONTRIBUTING.md) for the development
-setup and the rules that keep this project trustworthy (no fake data, no secrets in logs,
-no float money math, clean TypeScript builds).
+Pull requests are welcome. The fastest path is **fork → branch → PR**:
+
+```bash
+# 1. fork the repository on GitHub, then clone your fork
+git clone https://github.com/<your-username>/monero-web-wallet.git
+cd monero-web-wallet
+
+# 2. create a branch
+git checkout -b fix/short-description
+
+# 3. make the change and verify that both packages still build
+npm --prefix backend run build
+npm --prefix frontend run build
+
+# 4. commit, push to your fork and open a pull request against AMLChecker/monero-web-wallet:main
+git commit -m "fix: short description"
+git push origin fix/short-description
+```
+
+Please read [CONTRIBUTING.md](CONTRIBUTING.md) before opening a PR — the rules that keep this project trustworthy are short but strict: **no mock data, no secrets in logs, no float money math, clean TypeScript builds**, and every user-facing button has to perform a real wallet RPC call.
+
+**Looking for something to build?** These are open and labelled:
+
+- [#1 Docker packaging](https://github.com/AMLChecker/monero-web-wallet/issues/1) — image + docker-compose for the wallet RPC, backend and UI (`help wanted`)
+- [#2 Launcher scripts for Linux and macOS](https://github.com/AMLChecker/monero-web-wallet/issues/2) — `start.sh` / `stop.sh` equivalent to `Start.bat` (`good first issue`)
+- [#3 UI translations](https://github.com/AMLChecker/monero-web-wallet/issues/3) — extract strings, add Russian (`help wanted`)
+- [#4 Optional fiat price display](https://github.com/AMLChecker/monero-web-wallet/issues/4) — opt-in price API, never an invented rate (`help wanted`)
+
+Everything labelled [good first issue](https://github.com/AMLChecker/monero-web-wallet/labels/good%20first%20issue) and [help wanted](https://github.com/AMLChecker/monero-web-wallet/labels/help%20wanted) is fair game — comment on the issue if you want to take one, so we do not duplicate work.
 
 ## License
 
