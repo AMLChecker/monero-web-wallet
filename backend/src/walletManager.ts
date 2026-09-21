@@ -217,7 +217,17 @@ export class WalletManager {
 
     return this.exclusive(() =>
       this.guarded(async () => {
-        await this.rpc.createWallet(name, rawPassword, 'English');
+        // Start a brand-new wallet at the current chain height: its history is
+        // empty, so scanning from genesis would waste hours and bandwidth.
+        let restoreHeight: number | undefined;
+        try {
+          const daemon = await getDaemonStatus();
+          if (daemon.online && daemon.height) restoreHeight = daemon.height;
+        } catch {
+          /* no node reachable: fall back to the RPC default */
+        }
+        await this.rpc.createWallet(name, rawPassword, 'English', restoreHeight);
+        logger.info('wallet created', { restoreHeight: restoreHeight ?? 'rpc-default' });
         const addressResult = await this.rpc.getAddress(0);
         const validation = await this.rpc.validateAddress(addressResult.address).catch(() => null);
         this.session = {

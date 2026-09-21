@@ -187,8 +187,18 @@ export class MoneroRpcClient {
   }
 
   // --- wallet lifecycle -------------------------------------------------
-  createWallet(filename: string, password: string, language = 'English') {
-    return this.call('create_wallet', { filename, password, language }, { timeoutMs: HEAVY_TIMEOUT_MS });
+  /**
+   * `restoreHeight` is the height the wallet starts scanning from. Without it a
+   * freshly created wallet keeps restore height 0 and, after the next RPC
+   * restart, rescans the whole chain from block 1 — so the caller passes the
+   * current daemon height for new wallets.
+   */
+  createWallet(filename: string, password: string, language = 'English', restoreHeight?: number) {
+    const params: Record<string, unknown> = { filename, password, language };
+    if (typeof restoreHeight === 'number' && Number.isFinite(restoreHeight) && restoreHeight > 0) {
+      params.restore_height = Math.floor(restoreHeight);
+    }
+    return this.call('create_wallet', params, { timeoutMs: HEAVY_TIMEOUT_MS });
   }
 
   openWallet(filename: string, password: string) {
