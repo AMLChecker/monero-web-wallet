@@ -1,6 +1,8 @@
 import { AlertTriangle, Check, Info, X } from 'lucide-react';
 import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from 'react';
 
+import { useI18n } from '../i18n/I18nProvider';
+
 type Tone = 'info' | 'success' | 'error';
 
 type Toast = {
@@ -27,6 +29,7 @@ const TONE_STYLES: Record<Tone, { icon: ReactNode; ring: string }> = {
 };
 
 export function ToastProvider({ children }: { children: ReactNode }) {
+  const { t } = useI18n();
   const [toasts, setToasts] = useState<Toast[]>([]);
 
   const push = useCallback((toast: { title: string; description?: string; tone?: Tone }) => {
@@ -57,7 +60,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
               type="button"
               onClick={() => setToasts((current) => current.filter((entry) => entry.id !== toast.id))}
               className="rounded-md p-1 text-ink-dim transition hover:bg-white/5 hover:text-ink"
-              aria-label="Dismiss notification"
+              aria-label={t('common.dismissNotification')}
             >
               <X className="h-3.5 w-3.5" />
             </button>

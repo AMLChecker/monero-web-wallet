@@ -81,22 +81,36 @@ export function formatDateTime(timestampSeconds: number | null | undefined): str
   });
 }
 
-export function formatRelativeTime(timestampSeconds: number | null | undefined): string {
+export function formatRelativeTime(
+  timestampSeconds: number | null | undefined,
+  locale: string = typeof navigator !== 'undefined' ? navigator.language : 'en',
+): string {
   if (!timestampSeconds) return '';
   const diffSeconds = Math.round(Date.now() / 1000 - timestampSeconds);
-  if (diffSeconds < 60) return 'just now';
-  if (diffSeconds < 3600) return `${Math.floor(diffSeconds / 60)} min ago`;
-  if (diffSeconds < 86_400) return `${Math.floor(diffSeconds / 3600)} h ago`;
-  return `${Math.floor(diffSeconds / 86_400)} d ago`;
+  const rtf = new Intl.RelativeTimeFormat(locale, { numeric: 'auto' });
+  if (Math.abs(diffSeconds) < 60) return rtf.format(-diffSeconds, 'second');
+  if (Math.abs(diffSeconds) < 3600) return rtf.format(-Math.floor(diffSeconds / 60), 'minute');
+  if (Math.abs(diffSeconds) < 86_400) return rtf.format(-Math.floor(diffSeconds / 3600), 'hour');
+  return rtf.format(-Math.floor(diffSeconds / 86_400), 'day');
 }
 
-export function formatDuration(seconds: number | null | undefined): string {
+export function formatDuration(
+  seconds: number | null | undefined,
+  locale: string = typeof navigator !== 'undefined' ? navigator.language : 'en',
+): string {
   if (!seconds || !Number.isFinite(seconds) || seconds <= 0) return '';
   const minutes = Math.round(seconds / 60);
-  if (minutes < 1) return 'less than a minute';
-  if (minutes < 60) return `${minutes} min`;
+  if (minutes < 1) {
+    return new Intl.RelativeTimeFormat(locale, { numeric: 'auto' }).format(0, 'minute');
+  }
+  if (minutes < 60) {
+    return new Intl.NumberFormat(locale).format(minutes) + ' min';
+  }
   const hours = Math.floor(minutes / 60);
-  return `${hours} h ${minutes % 60} min`;
+  const rem = minutes % 60;
+  const hourPart = new Intl.NumberFormat(locale).format(hours);
+  const minPart = new Intl.NumberFormat(locale).format(rem);
+  return rem === 0 ? hourPart + ' h' : hourPart + ' h ' + minPart + ' min';
 }
 
 export function percent(value: number | null | undefined, digits = 2): string {

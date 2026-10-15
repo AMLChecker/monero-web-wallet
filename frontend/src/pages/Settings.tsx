@@ -3,14 +3,21 @@ import { useState } from 'react';
 
 import { ApiError, api } from '../api/client';
 import { useToast } from '../components/Toast';
-import { Alert, Button, Card, CardHeader, CopyButton, Input, KeyValue, Modal, StatusPill } from '../components/ui';
+import { Alert, Button, Card, CardHeader, CopyButton, Input, KeyValue, Modal, Segmented, StatusPill } from '../components/ui';
 import { formatNumber, percent } from '../lib/format';
+import { useI18n } from '../i18n/I18nProvider';
+import type { LocaleCode } from '../i18n/I18nProvider';
 import { useWallet } from '../state/wallet';
 import type { PriceSourceId } from '../api/types';
 
 export function SettingsPage({ onLock, locking }: { onLock: () => void; locking: boolean }) {
   const { info, reload, refreshWallet, refreshing, daemonPending } = useWallet();
   const { push } = useToast();
+  const { t, locale, setLocale, localeOptions } = useI18n();
+  const languageOptions = localeOptions.map((option) => ({
+    value: option.code,
+    label: t(option.labelKey),
+  }));
 
   const [priceBusy, setPriceBusy] = useState(false);
   const [priceError, setPriceError] = useState<ApiError | null>(null);
@@ -32,7 +39,7 @@ export function SettingsPage({ onLock, locking }: { onLock: () => void; locking:
       const result = await api.setDaemon(daemonInput.trim());
       setDaemonInput('');
       push({
-        title: result.online ? 'Node updated' : 'Node address saved',
+        title: result.online ? t('settings.nodeUpdated') : t('settings.nodeSaved'),
         description: result.note,
         tone: result.online ? 'success' : 'error',
       });
@@ -67,7 +74,7 @@ export function SettingsPage({ onLock, locking }: { onLock: () => void; locking:
     try {
       const result = await api.setPriceSource(source);
       push({
-        title: source === 'none' ? 'Price source disabled' : `Price source: ${result.current.label}`,
+        title: source === 'none' ? t('settings.priceDisabledToast') : t('settings.priceSourceToast', { label: result.current.label }),
         description: result.quote.value ? `XMR = ${result.quote.value} ${result.current.pair.split('/')[1]}` : result.quote.error ?? undefined,
         tone: source === 'none' || result.quote.value ? 'success' : 'error',
       });
@@ -91,83 +98,90 @@ export function SettingsPage({ onLock, locking }: { onLock: () => void; locking:
 
   return (
     <div className="grid grid-cols-1 items-start gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] lg:gap-5">
+      <Card className="lg:col-span-2">
+        <CardHeader title={t('settings.languageTitle')} description={t('settings.languageDesc')} />
+        <div className="px-4 py-5 sm:px-5">
+          <Segmented value={locale} options={languageOptions} onChange={(code) => setLocale(code as LocaleCode)} />
+        </div>
+      </Card>
+
       <Card>
-        <CardHeader title="Wallet" description="Details of the currently open wallet" />
+        <CardHeader title={t('settings.walletTitle')} description={t('settings.walletDesc')} />
         <div className="divide-y divide-line-soft px-5 py-2">
-          <KeyValue label="Wallet name">
+          <KeyValue label={t('settings.walletName')}>
             <span className="text-[13px] font-medium">{info?.wallet?.name ?? '—'}</span>
           </KeyValue>
-          <KeyValue label="Network">
+          <KeyValue label={t('settings.network')}>
             <span>{info?.wallet?.network ?? '—'}</span>
           </KeyValue>
-          <KeyValue label="Primary address">
+          <KeyValue label={t('settings.primaryAddress')}>
             <span className="mono-address block max-w-[320px] text-right text-ink-muted">{info?.wallet?.address ?? '—'}</span>
           </KeyValue>
-          <KeyValue label="Password storage">
-            <span>memory only — never in localStorage</span>
+          <KeyValue label={t('settings.passwordStorage')}>
+            <span>{t('settings.passwordStorageValue')}</span>
           </KeyValue>
         </div>
         <div className="flex flex-col gap-2 px-4 pb-4 sm:flex-row sm:flex-wrap sm:px-5 sm:pb-5">
-          <CopyButton value={info?.wallet?.address ?? ''} label="Copy Address" variant="secondary" />
+          <CopyButton value={info?.wallet?.address ?? ''} label={t('settings.copyAddress')} variant="secondary" />
           <Button
             variant="secondary"
             onClick={() =>
-              void refreshWallet().catch(() => push({ title: 'Could not refresh the wallet', tone: 'error' }))
+              void refreshWallet().catch(() => push({ title: t('settings.refreshFailed'), tone: 'error' }))
             }
             loading={refreshing}
             icon={<RefreshCw className="h-4 w-4" />}
           >
-            Rescan / refresh
+            {t('settings.rescan')}
           </Button>
         </div>
       </Card>
 
       <Card>
         <CardHeader
-          title="Node"
-          description="The Monero daemon this wallet synchronises with"
+          title={t('settings.nodeTitle')}
+          description={t('settings.nodeDesc')}
           action={
             <StatusPill tone={daemonOffline ? 'danger' : daemonPending ? 'neutral' : 'ok'}>
-              {daemonPending ? 'checking…' : daemonOffline ? 'offline' : 'connected'}
+              {daemonPending ? t('common.checking') : daemonOffline ? t('common.offline') : t('common.connected')}
             </StatusPill>
           }
         />
         <div className="divide-y divide-line-soft px-4 py-2 sm:px-5">
-          <KeyValue label="Daemon address">
+          <KeyValue label={t('settings.daemonAddress')}>
             <span className="font-mono text-[12px]">{info?.daemon.address ?? '—'}</span>
           </KeyValue>
-          <KeyValue label="Connection status">
+          <KeyValue label={t('settings.connectionStatus')}>
             <span className={daemonOffline ? 'text-danger' : 'text-ok'}>
               {daemonOffline
-                ? info?.daemon.error ?? 'unreachable'
-                : `${info?.daemon.status ?? 'online'} · ${info?.daemon.latencyMs ?? '—'} ms`}
+                ? info?.daemon.error ?? t('common.unreachable')
+                : t('settings.connectionOnline', { status: info?.daemon.status ?? t('common.online'), latency: info?.daemon.latencyMs ?? t('common.emDash') })}
             </span>
           </KeyValue>
-          <KeyValue label="Wallet height">
+          <KeyValue label={t('settings.walletHeight')}>
             <span className="num">{formatNumber(info?.sync.walletHeight ?? null)}</span>
           </KeyValue>
-          <KeyValue label="Daemon height">
+          <KeyValue label={t('settings.daemonHeight')}>
             <span className="num">{formatNumber(info?.sync.daemonHeight ?? null)}</span>
           </KeyValue>
-          <KeyValue label="Sync progress">
+          <KeyValue label={t('settings.syncProgress')}>
             <span className="num">
-              {percent(info?.sync.progressPercent ?? null, 2)} {info?.sync.synchronized ? '(synced)' : ''}
+              {percent(info?.sync.progressPercent ?? null, 2)} {info?.sync.synchronized ? t('settings.syncedParen') : ''}
             </span>
           </KeyValue>
         </div>
         <div className="flex flex-col gap-3 border-t border-line-soft px-4 py-4 sm:px-5">
           <Input
-            label="Change daemon"
+            label={t('settings.changeDaemon')}
             value={daemonInput}
             onChange={(event) => setDaemonInput(event.target.value)}
-            placeholder="host:port, e.g. 127.0.0.1:18081"
-            hint="Applied through monero-wallet-rpc and saved to node-address.txt for the next launch."
+            placeholder={t('settings.daemonPlaceholder')}
+            hint={t('settings.daemonHint')}
             onKeyDown={(event) => {
               if (event.key === 'Enter' && daemonInput.trim().length > 0 && !daemonBusy) void applyDaemon();
             }}
           />
           {daemonError ? (
-            <Alert tone="danger" title="Could not change the node">
+            <Alert tone="danger" title={t('settings.daemonChangeFailed')}>
               {daemonError.message}
               {daemonError.hint ? <p className="mt-1 text-ink-dim">{daemonError.hint}</p> : null}
             </Alert>
@@ -178,17 +192,17 @@ export function SettingsPage({ onLock, locking }: { onLock: () => void; locking:
             loading={daemonBusy}
             disabled={daemonInput.trim().length === 0}
           >
-            Apply node address
+            {t('settings.applyNode')}
           </Button>
         </div>
       </Card>
 
       <Card>
         <CardHeader
-          title="Price"
-          description="Optional quote for your balance. This is the only outbound request the wallet makes."
+          title={t('settings.priceTitle')}
+          description={t('settings.priceDesc')}
           action={
-            <StatusPill tone={info?.price.enabled ? 'ok' : 'neutral'}>{info?.price.enabled ? 'enabled' : 'off'}</StatusPill>
+            <StatusPill tone={info?.price.enabled ? 'ok' : 'neutral'}>{info?.price.enabled ? t('common.enabled') : t('common.off')}</StatusPill>
           }
         />
         <div className="flex flex-col gap-4 px-4 py-5 sm:px-5">
@@ -215,62 +229,59 @@ export function SettingsPage({ onLock, locking }: { onLock: () => void; locking:
           </div>
 
           <div className="divide-y divide-line-soft border-t border-line-soft pt-1">
-            <KeyValue label="XMR price">
+            <KeyValue label={t('settings.xmrPrice')}>
               <span className="num">
                 {info?.price.value
                   ? `${info.price.value} ${info.price.pair.split('/')[1] ?? ''}`
                   : info?.price.enabled
-                    ? '—'
-                    : 'disabled'}
+                    ? t('common.emDash')
+                    : t('settings.priceDisabled')}
               </span>
             </KeyValue>
-            <KeyValue label="Balance value">
+            <KeyValue label={t('settings.balanceValue')}>
               <span className="num">
                 {info?.price.totalUsdt
                   ? `${info.price.totalUsdt} ${info.price.pair.split('/')[1] ?? ''}`
                   : '—'}
               </span>
             </KeyValue>
-            <KeyValue label="Updated">
+            <KeyValue label={t('settings.updated')}>
               <span>{info?.price.updatedAt ? new Date(info.price.updatedAt).toLocaleTimeString() : '—'}</span>
             </KeyValue>
           </div>
 
           {info?.price.source === 'custom' && !info.priceSources.find((entry) => entry.id === 'custom')?.url ? (
-            <Alert tone="warn" title="Custom endpoint is not configured">
-              Set <span className="font-mono">PRICE_API_URL</span> to an endpoint returning{' '}
-              <span className="font-mono">{'{ "price": 569.94 }'}</span> and restart the wallet.
+            <Alert tone="warn" title={t('settings.customNotConfiguredTitle')}>
+              {t('settings.customNotConfiguredBody', { example: '{ "price": 569.94 }' })}
             </Alert>
           ) : null}
 
           {priceError ? (
-            <Alert tone="danger" title="Could not change the price source">
+            <Alert tone="danger" title={t('settings.priceSourceFailed')}>
               {priceError.message}
             </Alert>
           ) : null}
 
           {info?.price.error && info.price.enabled ? (
-            <Alert tone="warn" title="Price API problem">
+            <Alert tone="warn" title={t('settings.priceApiProblem')}>
               {info.price.error}
             </Alert>
           ) : null}
 
           <p className="text-[11.5px] leading-relaxed text-ink-faint">
-            When a source is enabled, the backend asks that API at most once a minute and only to display a rough
-            value. Turn it off to keep the wallet fully offline — the balance itself never depends on it, and the
-            project never invents a rate.
+            {t('settings.priceFootnote')}
           </p>
         </div>
       </Card>
 
       <Card>
-        <CardHeader title="Security" description="Lock the session or back up the recovery phrase" />
+        <CardHeader title={t('settings.securityTitle')} description={t('settings.securityDesc')} />
         <div className="flex flex-col gap-4 px-4 py-5 sm:px-5">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
             <div>
-              <p className="text-[13px] font-medium text-ink">Lock wallet</p>
+              <p className="text-[13px] font-medium text-ink">{t('settings.lockTitle')}</p>
               <p className="mt-0.5 text-[12px] leading-relaxed text-ink-muted">
-                Closes the wallet session on the backend and returns to the wallet selection screen.
+                {t('settings.lockDesc')}
               </p>
             </div>
             <Button
@@ -280,15 +291,15 @@ export function SettingsPage({ onLock, locking }: { onLock: () => void; locking:
               icon={<Lock className="h-4 w-4" />}
               className="w-full sm:w-auto"
             >
-              Lock Wallet
+              {t('settings.lockButton')}
             </Button>
           </div>
           <div className="divider" />
           <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
             <div>
-              <p className="text-[13px] font-medium text-ink">Backup recovery phrase</p>
+              <p className="text-[13px] font-medium text-ink">{t('settings.backupTitle')}</p>
               <p className="mt-0.5 text-[12px] leading-relaxed text-ink-muted">
-                Re-enter the wallet password to display the 25 word seed. It is never logged and never cached.
+                {t('settings.backupDesc')}
               </p>
             </div>
             <Button
@@ -297,38 +308,38 @@ export function SettingsPage({ onLock, locking }: { onLock: () => void; locking:
               icon={<ShieldCheck className="h-4 w-4" />}
               className="w-full sm:w-auto"
             >
-              Show phrase
+              {t('settings.showPhrase')}
             </Button>
           </div>
-          <Alert tone="warn" title="Keep the seed offline">
-            Anyone who reads these 25 words can spend your funds. Never type them into a website and never keep them in a screenshot folder.
+          <Alert tone="warn" title={t('settings.keepSeedTitle')}>
+            {t('settings.keepSeedBody')}
           </Alert>
         </div>
       </Card>
 
       <Card>
-        <CardHeader title="About" />
+        <CardHeader title={t('settings.aboutTitle')} />
         <div className="divide-y divide-line-soft px-4 py-2 sm:px-5">
-          <KeyValue label="App version">
+          <KeyValue label={t('settings.appVersion')}>
             <span className="num">{info?.app.version ?? '1.0.0'}</span>
           </KeyValue>
-          <KeyValue label="Wallet RPC version">
+          <KeyValue label={t('settings.rpcVersion')}>
             <span className="num">{info?.rpc.version ?? '—'}</span>
           </KeyValue>
-          <KeyValue label="RPC endpoint">
-            <span className="font-mono text-[12px]">127.0.0.1 (loopback only)</span>
+          <KeyValue label={t('settings.rpcEndpoint')}>
+            <span className="font-mono text-[12px]">{t('settings.rpcEndpointValue')}</span>
           </KeyValue>
-          <KeyValue label="Send mode">
+          <KeyValue label={t('settings.sendMode')}>
             <span>
-              {info?.app.sendMode === 'prepare' ? 'two-phase (prepare → confirm → relay)' : 'direct (confirm → send)'}
+              {info?.app.sendMode === 'prepare' ? t('settings.sendModePrepare') : t('settings.sendModeDirect')}
             </span>
           </KeyValue>
-          <KeyValue label="Wallet directory">
+          <KeyValue label={t('settings.walletDir')}>
             <span className="mono-address block max-w-[320px] text-right text-ink-muted">{info?.app.walletDir ?? '—'}</span>
           </KeyValue>
-          <KeyValue label="Price API">
+          <KeyValue label={t('settings.priceApi')}>
             {!info?.price.enabled ? (
-              <span>off — the wallet makes no price requests</span>
+              <span>{t('settings.priceApiOff')}</span>
             ) : info.price.error ? (
               <span className="text-warn">
                 {info.price.label}: {info.price.error}
@@ -346,8 +357,8 @@ export function SettingsPage({ onLock, locking }: { onLock: () => void; locking:
       <Modal
         open={phraseOpen}
         onClose={closePhraseDialog}
-        title="Backup recovery phrase"
-        description="Confirm the wallet password to display the seed words."
+        title={t('settings.phraseModalTitle')}
+        description={t('settings.phraseModalDesc')}
         footer={
           phrase ? (
             <>
@@ -356,14 +367,14 @@ export function SettingsPage({ onLock, locking }: { onLock: () => void; locking:
                 onClick={() => setPhraseVisible((current) => !current)}
                 icon={phraseVisible ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
               >
-                {phraseVisible ? 'Hide' : 'Reveal'}
+                {phraseVisible ? t('common.hide') : t('common.reveal')}
               </Button>
-              <CopyButton value={phrase.join(' ')} label="Copy phrase" variant="primary" size="md" />
+              <CopyButton value={phrase.join(' ')} label={t('settings.copyPhrase')} variant="primary" size="md" />
             </>
           ) : (
             <>
               <Button variant="ghost" onClick={closePhraseDialog} disabled={phraseBusy}>
-                Cancel
+                {t('common.cancel')}
               </Button>
               <Button
                 variant="primary"
@@ -371,7 +382,7 @@ export function SettingsPage({ onLock, locking }: { onLock: () => void; locking:
                 loading={phraseBusy}
                 disabled={password.length === 0}
               >
-                Reveal phrase
+                {t('settings.revealPhrase')}
               </Button>
             </>
           )
@@ -390,17 +401,17 @@ export function SettingsPage({ onLock, locking }: { onLock: () => void; locking:
                   ))}
                 </ol>
               ) : (
-                <p className="py-6 text-center text-[12.5px] text-ink-dim">The phrase is hidden.</p>
+                <p className="py-6 text-center text-[12.5px] text-ink-dim">{t('settings.phraseHidden')}</p>
               )}
             </div>
-            <Alert tone="warn" title="Write these words down now">
-              Anyone with this phrase can access your funds.
+            <Alert tone="warn" title={t('settings.writeWordsTitle')}>
+              {t('settings.writeWordsBody')}
             </Alert>
           </div>
         ) : (
           <div className="flex flex-col gap-4">
             <Input
-              label="Wallet password"
+              label={t('settings.walletPassword')}
               type="password"
               value={password}
               autoFocus
@@ -411,7 +422,7 @@ export function SettingsPage({ onLock, locking }: { onLock: () => void; locking:
               placeholder="••••••••"
             />
             {phraseError ? (
-              <Alert tone="danger" title={phraseError.code === 'BAD_PASSWORD' ? 'Incorrect password' : 'Could not read the seed'}>
+              <Alert tone="danger" title={phraseError.code === 'BAD_PASSWORD' ? t('settings.incorrectPassword') : t('settings.seedReadFailed')}>
                 {phraseError.message}
                 {phraseError.hint ? <p className="mt-1 text-ink-dim">{phraseError.hint}</p> : null}
               </Alert>
@@ -420,8 +431,7 @@ export function SettingsPage({ onLock, locking }: { onLock: () => void; locking:
                 <span className="flex items-start gap-2">
                   <TriangleAlert className="mt-0.5 h-3.5 w-3.5 text-ink-dim" />
                   <span>
-                    The wallet is reloaded from disk to verify the password. A wrong password locks the session and returns you to the
-                    wallet selection screen.
+                    {t('settings.phraseReloadInfo')}
                   </span>
                 </span>
               </Alert>

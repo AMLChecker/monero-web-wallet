@@ -1,25 +1,33 @@
 import { AlertTriangle, Lock, RefreshCw, WifiOff } from 'lucide-react';
 import type { ReactNode } from 'react';
 
+import { useI18n } from '../i18n/I18nProvider';
 import { useWallet } from '../state/wallet';
 import { formatNumber, percent } from '../lib/format';
 import { Button, StatusPill } from './ui';
 
 export function NodePills({ compact = false }: { compact?: boolean }) {
   const { info, rpcOffline, daemonOffline, daemonPending } = useWallet();
+  const { t } = useI18n();
   const sync = info?.sync;
 
   return (
     <div className="flex flex-wrap items-center gap-1.5 lg:justify-end lg:gap-2">
       <StatusPill tone={rpcOffline ? 'danger' : 'ok'} pulse={!rpcOffline && !sync?.synchronized}>
-        {compact ? 'RPC' : 'Wallet RPC'} {rpcOffline ? 'offline' : 'online'}
+        {compact ? t('status.rpcShort') : t('status.walletRpc')} {rpcOffline ? t('common.offline') : t('common.online')}
       </StatusPill>
       <StatusPill tone={daemonOffline ? 'warn' : daemonPending ? 'neutral' : 'ok'}>
-        Node{' '}
-        {daemonPending ? 'checking…' : daemonOffline ? 'unreachable' : `${formatNumber(info?.daemon.height ?? null, false)}`}
+        {t('status.node')}{' '}
+        {daemonPending
+          ? t('common.checking')
+          : daemonOffline
+            ? t('common.unreachable')
+            : `${formatNumber(info?.daemon.height ?? null, false)}`}
       </StatusPill>
       <StatusPill tone={sync?.synchronized ? 'ok' : 'warn'}>
-        {sync?.synchronized ? 'Synced' : `Syncing ${percent(sync?.progressPercent ?? null, compact ? 0 : 2)}`}
+        {sync?.synchronized
+          ? t('common.synced')
+          : t('status.syncingPercent', { percent: percent(sync?.progressPercent ?? null, compact ? 0 : 2) })}
       </StatusPill>
     </div>
   );
@@ -27,6 +35,7 @@ export function NodePills({ compact = false }: { compact?: boolean }) {
 
 export function HeaderActions({ onLock, compact = false }: { onLock?: () => void; compact?: boolean }) {
   const { refreshWallet, refreshing } = useWallet();
+  const { t } = useI18n();
 
   return (
     <div className="flex shrink-0 items-center gap-1.5 lg:gap-2">
@@ -38,7 +47,7 @@ export function HeaderActions({ onLock, compact = false }: { onLock?: () => void
           className={compact ? 'px-2.5' : undefined}
           icon={<Lock className="h-3.5 w-3.5" />}
         >
-          {compact ? <span className="sr-only">Lock wallet</span> : 'Lock'}
+          {compact ? <span className="sr-only">{t('status.lockWallet')}</span> : t('status.lock')}
         </Button>
       ) : null}
       <Button
@@ -49,7 +58,7 @@ export function HeaderActions({ onLock, compact = false }: { onLock?: () => void
         className={compact ? 'px-2.5' : undefined}
         icon={<RefreshCw className="h-3.5 w-3.5" />}
       >
-        {compact ? <span className="sr-only">Sync now</span> : 'Sync now'}
+        {compact ? <span className="sr-only">{t('status.syncNow')}</span> : t('status.syncNow')}
       </Button>
     </div>
   );
@@ -57,14 +66,15 @@ export function HeaderActions({ onLock, compact = false }: { onLock?: () => void
 
 export function ServiceBanners() {
   const { info, rpcOffline, daemonOffline, error } = useWallet();
+  const { t } = useI18n();
 
   if (error && rpcOffline) {
     return (
       <Banner
         tone="danger"
         icon={<WifiOff className="h-4 w-4" />}
-        title="Wallet RPC Offline"
-        body={error.hint ?? 'monero-wallet-rpc is not answering on 127.0.0.1. Start the wallet with Start.bat.'}
+        title={t('status.rpcOfflineTitle')}
+        body={error.hint ?? t('status.rpcOfflineBody')}
       />
     );
   }
@@ -73,8 +83,10 @@ export function ServiceBanners() {
       <Banner
         tone="warn"
         icon={<AlertTriangle className="h-4 w-4" />}
-        title="Daemon unavailable"
-        body={`${info?.daemon.address ?? 'The node'} did not answer. The wallet cannot synchronise or broadcast until a reachable node is configured in Settings.`}
+        title={t('status.daemonUnavailableTitle')}
+        body={t('status.daemonUnavailableBody', {
+          address: info?.daemon.address ?? t('status.daemonFallback'),
+        })}
       />
     );
   }

@@ -10,6 +10,7 @@ import {
 } from 'react';
 import { createPortal } from 'react-dom';
 
+import { useI18n } from '../i18n/I18nProvider';
 import { copyText } from '../lib/clipboard';
 import { useToast } from './Toast';
 
@@ -257,6 +258,7 @@ export function Modal({
   footer?: ReactNode;
   size?: 'sm' | 'md' | 'lg';
 }) {
+  const { t } = useI18n();
   useEffect(() => {
     if (!open) return;
     const onKey = (event: KeyboardEvent) => {
@@ -286,7 +288,7 @@ export function Modal({
             type="button"
             onClick={onClose}
             className="rounded-lg p-1.5 text-ink-dim transition hover:bg-white/5 hover:text-ink"
-            aria-label="Close dialog"
+            aria-label={t('common.closeDialog')}
           >
             <X className="h-4 w-4" />
           </button>
@@ -319,17 +321,18 @@ export function CopyButton({
   className?: string;
 }) {
   const { push } = useToast();
+  const { t } = useI18n();
   const [copied, setCopied] = useState(false);
 
   const onCopy = async () => {
     const ok = await copyText(value);
     if (!ok) {
-      push({ title: 'Could not copy to the clipboard', tone: 'error' });
+      push({ title: t('common.copyFailed'), tone: 'error' });
       return;
     }
     setCopied(true);
     window.setTimeout(() => setCopied(false), 1_600);
-    push({ title: 'Copied to clipboard', tone: 'success' });
+    push({ title: t('common.copiedClipboard'), tone: 'success' });
   };
 
   return (
@@ -342,7 +345,7 @@ export function CopyButton({
       icon={copied ? <Check className="h-4 w-4 text-ok" /> : <Copy className="h-4 w-4" />}
       className={className}
     >
-      {label !== undefined && label.length === 0 ? '' : label ?? (copied ? 'Copied' : 'Copy')}
+      {label !== undefined && label.length === 0 ? '' : label ?? (copied ? t('common.copied') : t('common.copy'))}
     </Button>
   );
 }

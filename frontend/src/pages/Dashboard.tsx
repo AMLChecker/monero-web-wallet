@@ -8,10 +8,12 @@ import type { TxRecord } from '../api/types';
 import { usePolling } from '../hooks/useApi';
 import { formatNumber, formatRelativeTime, formatXmr, percent } from '../lib/format';
 import type { Route } from '../lib/hashRouter';
+import { useI18n } from '../i18n/I18nProvider';
 import { useWallet } from '../state/wallet';
 
 export function DashboardPage({ onNavigate }: { onNavigate: (route: Route) => void }) {
   const { info, rpcOffline, daemonOffline, daemonPending } = useWallet();
+  const { t, locale } = useI18n();
   const balance = usePolling(api.balance, 8_000, !rpcOffline);
   const history = usePolling(() => api.transactions(6), 15_000, !rpcOffline);
   const [selected, setSelected] = useState<TxRecord | null>(null);
@@ -33,7 +35,7 @@ export function DashboardPage({ onNavigate }: { onNavigate: (route: Route) => vo
         <Card className="p-4 sm:p-6">
           <div className="flex flex-col items-start gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-6">
             <div className="min-w-0">
-              <p className="label-caps">Total balance</p>
+              <p className="label-caps">{t('dashboard.totalBalance')}</p>
               <div className="mt-2.5 flex flex-wrap items-baseline gap-2">
                 {balanceAtomic === null ? (
                   <Skeleton className="h-10 w-56" />
@@ -48,8 +50,8 @@ export function DashboardPage({ onNavigate }: { onNavigate: (route: Route) => vo
               </div>
               <div className="mt-4 flex flex-wrap items-center gap-x-5 gap-y-1.5 text-[12.5px]">
                 <span className="text-ink-muted">
-                  Unlocked:{' '}
-                  <span className="num text-ink">{unlockedAtomic === null ? '—' : `${formatXmr(unlockedAtomic)} XMR`}</span>
+                  {t('dashboard.unlocked')}{' '}
+                  <span className="num text-ink">{unlockedAtomic === null ? t('common.emDash') : `${formatXmr(unlockedAtomic)} XMR`}</span>
                   {price?.unlockedUsdt ? (
                     <span className="num text-ink-dim"> ≈ {price.unlockedUsdt} {quoteCurrency}</span>
                   ) : null}
@@ -57,7 +59,7 @@ export function DashboardPage({ onNavigate }: { onNavigate: (route: Route) => vo
                 {lockedAtomic && lockedAtomic !== '0' ? (
                   <span className="inline-flex items-center gap-1.5 text-warn">
                     <Lock className="h-3.5 w-3.5" />
-                    <span className="num">{formatXmr(lockedAtomic)} XMR</span> locked
+                    <span className="num">{formatXmr(lockedAtomic)} XMR</span> {t('dashboard.locked')}
                   </span>
                 ) : null}
               </div>
@@ -69,12 +71,12 @@ export function DashboardPage({ onNavigate }: { onNavigate: (route: Route) => vo
                     </span>
                     <span className="text-[11.5px] text-ink-faint">
                       {price.label} · {price.pair}
-                      {priceAge ? ` · updated ${priceAge}` : ''}
+                      {priceAge ? ` · ${t('dashboard.priceUpdated', { age: priceAge })}` : ''}
                     </span>
                   </>
                 ) : price?.enabled ? (
                   <span className="text-[11.5px] text-warn">
-                    Price unavailable — {price.error ?? 'the price API did not answer'}.
+                    {t('dashboard.priceUnavailable', { reason: price.error ?? t('dashboard.priceApiSilent') })}
                   </span>
                 ) : (
                   <button
@@ -82,40 +84,40 @@ export function DashboardPage({ onNavigate }: { onNavigate: (route: Route) => vo
                     onClick={() => onNavigate('settings')}
                     className="text-[11.5px] text-ink-faint underline decoration-dotted underline-offset-2 transition hover:text-ink-muted"
                   >
-                    Balance in {quoteCurrency} is off — enable a price source in Settings
+                    {t('dashboard.priceOff', { currency: quoteCurrency })}
                   </button>
                 )}
               </div>
             </div>
             <StatusPill tone={syncTone} pulse={syncTone === 'warn'}>
-              {daemonOffline ? 'Node offline' : sync?.synchronized ? 'Synced' : 'Syncing'}
+              {daemonOffline ? t('dashboard.nodeOffline') : sync?.synchronized ? t('common.synced') : t('common.syncing')}
             </StatusPill>
           </div>
 
           <div className="mt-6 grid grid-cols-2 gap-2 sm:flex sm:flex-wrap">
             <Button variant="primary" onClick={() => onNavigate('send')} icon={<ArrowUpFromLine className="h-4 w-4" />}>
-              Send
+              {t('nav.send')}
             </Button>
             <Button variant="secondary" onClick={() => onNavigate('receive')} icon={<ArrowDownToLine className="h-4 w-4" />}>
-              Receive
+              {t('nav.receive')}
             </Button>
             <Button
               variant="secondary"
               onClick={() => onNavigate('support')}
               icon={<HeartHandshake className="h-4 w-4" />}
             >
-              Support
+              {t('nav.support')}
             </Button>
           </div>
         </Card>
 
         <Card>
           <CardHeader
-            title="Recent Activity"
-            description="Latest transfers known to this wallet"
+            title={t('dashboard.recentActivity')}
+            description={t('dashboard.recentDesc')}
             action={
               <Button size="sm" variant="ghost" onClick={() => onNavigate('transactions')}>
-                View all
+                {t('dashboard.viewAll')}
               </Button>
             }
           />
@@ -133,7 +135,7 @@ export function DashboardPage({ onNavigate }: { onNavigate: (route: Route) => vo
 
       <div className="flex flex-col gap-4 lg:gap-5">
         <Card>
-          <CardHeader title="Sync status" description="Wallet versus network height" />
+          <CardHeader title={t('dashboard.syncStatus')} description={t('dashboard.syncDesc')} />
           <div className="px-4 py-4 sm:px-5 sm:py-5">
             <p className="num text-[19px] font-semibold tracking-tight text-ink sm:text-[22px]">
               {formatNumber(sync?.walletHeight ?? null)}
@@ -146,54 +148,54 @@ export function DashboardPage({ onNavigate }: { onNavigate: (route: Route) => vo
               <ProgressBar value={sync?.progressPercent ?? null} tone={syncTone === 'ok' ? 'ok' : syncTone === 'warn' ? 'warn' : 'accent'} />
             </div>
             <div className="mt-3 flex items-center justify-between text-[12px]">
-              <span className="text-ink-dim">Progress</span>
+              <span className="text-ink-dim">{t('dashboard.progress')}</span>
               <span className="num text-ink-muted">{percent(sync?.progressPercent ?? null)}</span>
             </div>
             <div className="mt-4 divide-y divide-line-soft border-t border-line-soft pt-1">
-              <Row label="WALLET HEIGHT" value={formatNumber(sync?.walletHeight ?? null)} />
-              <Row label="DAEMON HEIGHT" value={formatNumber(sync?.daemonHeight ?? null)} />
-              <Row label="RPC VERSION" value={info?.rpc.version ?? '—'} />
+              <Row label={t('dashboard.walletHeight')} value={formatNumber(sync?.walletHeight ?? null)} />
+              <Row label={t('dashboard.daemonHeight')} value={formatNumber(sync?.daemonHeight ?? null)} />
+              <Row label={t('dashboard.rpcVersion')} value={info?.rpc.version ?? t('common.emDash')} />
             </div>
           </div>
         </Card>
 
         <Card>
           <CardHeader
-            title="Node"
-            description={info?.daemon.address ?? 'not configured'}
+            title={t('dashboard.node')}
+            description={info?.daemon.address ?? t('common.notConfigured')}
             action={
               <StatusPill tone={daemonOffline ? 'danger' : daemonPending ? 'neutral' : 'ok'}>
-                {daemonPending ? 'checking…' : daemonOffline ? 'offline' : info?.daemon.status ?? 'online'}
+                {daemonPending ? t('common.checking') : daemonOffline ? t('common.offline') : info?.daemon.status ?? t('common.online')}
               </StatusPill>
             }
           />
           <div className="divide-y divide-line-soft px-4 py-2 sm:px-5">
-            <Row label="DAEMON" value={info?.daemon.address ?? '—'} />
-            <Row label="LATENCY" value={info?.daemon.latencyMs !== null && info?.daemon.latencyMs !== undefined ? `${info.daemon.latencyMs} ms` : '—'} />
-            <Row label="NETWORK HEIGHT" value={formatNumber(info?.daemon.height ?? null)} />
+            <Row label={t('dashboard.daemon')} value={info?.daemon.address ?? t('common.emDash')} />
+            <Row label={t('dashboard.latency')} value={info?.daemon.latencyMs !== null && info?.daemon.latencyMs !== undefined ? t('dashboard.latencyMs', { ms: info.daemon.latencyMs }) : t('common.emDash')} />
+            <Row label={t('dashboard.networkHeight')} value={formatNumber(info?.daemon.height ?? null)} />
             <Row
-              label="LAST CHECKED"
-              value={info ? formatRelativeTime(Math.floor(info.fetchedAt / 1000)) || 'just now' : '—'}
+              label={t('dashboard.lastChecked')}
+              value={info ? formatRelativeTime(Math.floor(info.fetchedAt / 1000), locale) || t('common.justNow') : t('common.emDash')}
             />
           </div>
           {daemonOffline ? (
             <div className="px-4 pb-4 sm:px-5 sm:pb-5">
               <p className="text-[12px] leading-relaxed text-ink-muted">
-                {info?.daemon.error ?? 'The daemon did not answer.'} Configure a reachable node under Settings → Node.
+                {info?.daemon.error ?? t('dashboard.daemonSilent')} {t('dashboard.daemonErrorHint')}
               </p>
               <Button size="sm" variant="secondary" className="mt-3" onClick={() => onNavigate('settings')}>
-                Open Settings
+                {t('dashboard.openSettings')}
               </Button>
             </div>
           ) : null}
         </Card>
 
         <Card>
-          <CardHeader title="Wallet" action={<Wallet className="h-4 w-4 text-ink-dim" />} />
+          <CardHeader title={t('dashboard.walletCard')} action={<Wallet className="h-4 w-4 text-ink-dim" />} />
           <div className="divide-y divide-line-soft px-4 py-2 sm:px-5">
-            <Row label="NAME" value={info?.wallet?.name ?? '—'} />
-            <Row label="NETWORK" value={info?.wallet?.network ?? '—'} />
-            <Row label="PASSWORD" value="not stored in the browser" />
+            <Row label={t('dashboard.name')} value={info?.wallet?.name ?? t('common.emDash')} />
+            <Row label={t('dashboard.network')} value={info?.wallet?.network ?? t('common.emDash')} />
+            <Row label={t('dashboard.password')} value={t('dashboard.passwordNotStored')} />
           </div>
         </Card>
       </div>

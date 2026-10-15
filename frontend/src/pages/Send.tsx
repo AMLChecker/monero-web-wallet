@@ -1,5 +1,5 @@
 import { ArrowRight, CheckCircle2, Info, Send as SendIcon, TriangleAlert } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 import { ApiError, api } from '../api/client';
 import { useToast } from '../components/Toast';
@@ -8,6 +8,7 @@ import type { AddressValidation, PreparedSend, SentTransaction } from '../api/ty
 import { usePolling } from '../hooks/useApi';
 import { formatXmr, isValidAmountInput, shortenAddress } from '../lib/format';
 import type { Route } from '../lib/hashRouter';
+import { useI18n } from '../i18n/I18nProvider';
 import { useWallet } from '../state/wallet';
 
 /**
@@ -24,15 +25,18 @@ const NETWORK_PRIORITY = 0;
  * address before the transaction is signed.
  */
 const DEFAULT_SUPPORT_PERCENT = 0.5;
-const SUPPORT_OPTIONS = [
-  { value: 0, label: 'Off' },
-  { value: 0.5, label: '0.5%' },
-  { value: 1, label: '1%' },
-];
-
 export function SendPage({ onNavigate }: { onNavigate: (route: Route) => void }) {
   const { info, rpcOffline, daemonOffline } = useWallet();
   const { push } = useToast();
+  const { t } = useI18n();
+  const supportOptions = useMemo(
+    () => [
+      { value: 0, label: t('send.supportOff') },
+      { value: 0.5, label: '0.5%' },
+      { value: 1, label: '1%' },
+    ],
+    [t],
+  );
   const balance = usePolling(api.balance, 10_000, !rpcOffline);
 
   const [address, setAddress] = useState('');
@@ -70,7 +74,7 @@ export function SendPage({ onNavigate }: { onNavigate: (route: Route) => void })
   }, [address]);
 
   const addressError =
-    addressLooksValid && validation && !validation.valid ? 'This is not a valid Monero address for mainnet.' : undefined;
+    addressLooksValid && validation && !validation.valid ? t('send.addressInvalid') : undefined;
   const canReview = addressLooksValid && amountValid && !busy && !rpcOffline && !daemonOffline;
 
   const review = async () => {
@@ -99,7 +103,7 @@ export function SendPage({ onNavigate }: { onNavigate: (route: Route) => void })
       const result = await api.send(prepared.prepareId);
       setSent(result);
       setPrepared(null);
-      push({ title: 'Transaction broadcast', description: 'It stays pending until the network mines it.', tone: 'success' });
+      push({ title: t('send.broadcastToast'), description: t('send.broadcastDesc'), tone: 'success' });
     } catch (caught) {
       const apiError = caught as ApiError;
       setError(apiError);
@@ -131,31 +135,31 @@ export function SendPage({ onNavigate }: { onNavigate: (route: Route) => void })
             <CheckCircle2 className="h-5 w-5 text-ok" />
           </span>
           <div>
-            <h1 className="text-[18px] font-semibold tracking-tight text-ink">Transaction sent</h1>
-            <p className="text-[12.5px] text-ink-muted">Your wallet signed and broadcast this transfer to the network.</p>
+            <h1 className="text-[18px] font-semibold tracking-tight text-ink">{t('send.sentTitle')}</h1>
+            <p className="text-[12.5px] text-ink-muted">{t('send.sentSubtitle')}</p>
           </div>
         </div>
 
         <div className="mt-6 divide-y divide-line-soft rounded-xl border border-line bg-surface-sunken px-4 py-1">
-          <Recap label="Amount" value={`${formatXmr(sent.amountAtomic)} XMR`} />
-          <Recap label="Network fee" value={sent.feeAtomic ? `${formatXmr(sent.feeAtomic)} XMR` : '—'} />
+          <Recap label={t('send.amount')} value={`${formatXmr(sent.amountAtomic)} XMR`} />
+          <Recap label={t('send.networkFee')} value={sent.feeAtomic ? `${formatXmr(sent.feeAtomic)} XMR` : t('common.emDash')} />
           {sent.support?.enabled ? (
             <Recap
-              label={`Support (optional, ${sent.support.percent}%)`}
-              value={`${formatXmr(sent.support.amountAtomic)} XMR → ${shortenAddress(sent.support.address ?? '', 8, 6)}`}
+              label={t('send.supportOptional', { percent: sent.support.percent })}
+              value={t('send.supportValue', { amount: formatXmr(sent.support.amountAtomic), address: shortenAddress(sent.support.address ?? '', 8, 6) })}
             />
           ) : null}
-          <Recap label="Recipient" value={shortenAddress(sent.address, 16, 10)} mono />
-          <Recap label="Transaction id" value={sent.txHash} mono />
+          <Recap label={t('send.recipient')} value={shortenAddress(sent.address, 16, 10)} mono />
+          <Recap label={t('send.txid')} value={sent.txHash} mono />
         </div>
 
         <div className="mt-5 flex flex-col gap-2 sm:flex-row sm:flex-wrap">
-          <CopyButton value={sent.txHash} label="Copy TXID" variant="secondary" />
+          <CopyButton value={sent.txHash} label={t('send.copyTxid')} variant="secondary" />
           <Button variant="primary" onClick={reset}>
-            New transaction
+            {t('send.newTx')}
           </Button>
           <Button variant="ghost" onClick={() => onNavigate('transactions')}>
-            View transactions
+            {t('send.viewTx')}
           </Button>
         </div>
       </Card>
@@ -166,10 +170,10 @@ export function SendPage({ onNavigate }: { onNavigate: (route: Route) => void })
     <>
       <div className="grid grid-cols-1 items-start gap-4 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)] lg:gap-5">
         <Card>
-          <CardHeader title="Send Monero" description="Transactions are signed locally and broadcast through your node." />
+          <CardHeader title={t('send.formTitle')} description={t('send.formDesc')} />
           <div className="flex flex-col gap-4 px-5 py-5">
             <Input
-              label="Recipient address"
+              label={t('send.recipientAddress')}
               value={address}
               mono
               placeholder="4..."
@@ -178,17 +182,23 @@ export function SendPage({ onNavigate }: { onNavigate: (route: Route) => void })
               hint={
                 validation && validation.valid ? (
                   <span className="text-ok">
-                    Valid {validation.subaddress ? 'subaddress' : validation.integrated ? 'integrated address' : 'address'} (
-                    {validation.nettype || 'mainnet'})
+                    {t('send.addressValid', {
+                      kind: validation.subaddress
+                        ? t('send.kindSubaddress')
+                        : validation.integrated
+                          ? t('send.kindIntegrated')
+                          : t('send.kindAddress'),
+                      nettype: validation.nettype || t('common.mainnet'),
+                    })}
                   </span>
                 ) : (
-                  'Paste the full Monero address of the recipient.'
+                  t('send.addressHint')
                 )
               }
             />
 
             <Input
-              label="Amount"
+              label={t('send.amountLabel')}
               value={amount}
               inputMode="decimal"
               placeholder="0.000000"
@@ -202,30 +212,29 @@ export function SendPage({ onNavigate }: { onNavigate: (route: Route) => void })
                     onClick={() => unlocked && setAmount(formatXmr(unlocked))}
                     disabled={!unlocked}
                   >
-                    MAX
+                    {t('send.max')}
                   </button>
                 </>
               }
-              hint="Leave room for the network fee when you spend the full balance."
+              hint={t('send.amountHint')}
             />
 
             <div>
-              <p className="mb-1.5 text-[12.5px] font-medium text-ink-muted">Support the project</p>
+              <p className="mb-1.5 text-[12.5px] font-medium text-ink-muted">{t('send.supportTitle')}</p>
               <Segmented
                 value={supportPercent}
-                options={SUPPORT_OPTIONS}
+                options={supportOptions}
                 onChange={setSupportPercent}
               />
               <p className="mt-1.5 text-[12px] leading-snug text-ink-dim">
-                A 0.5% tip is preselected — tap “Off” to send without it. The exact amount and the developer address
-                are always shown in the confirmation dialog before anything is signed.
+                {t('send.supportHint')}
               </p>
             </div>
 
             {error ? (
               <Alert
                 tone="danger"
-                title={error.code === 'INSUFFICIENT_FUNDS' ? 'Not enough spendable balance' : 'Transaction not created'}
+                title={error.code === 'INSUFFICIENT_FUNDS' ? t('send.insufficientFunds') : t('send.notCreated')}
               >
                 {error.message}
                 {error.hint ? <p className="mt-1 text-ink-dim">{error.hint}</p> : null}
@@ -233,8 +242,8 @@ export function SendPage({ onNavigate }: { onNavigate: (route: Route) => void })
             ) : null}
 
             {daemonOffline ? (
-              <Alert tone="warn" title="Daemon unavailable">
-                A Monero node is required to build and broadcast transactions. Configure a reachable node in Settings.
+              <Alert tone="warn" title={t('send.daemonUnavailableTitle')}>
+                {t('send.daemonUnavailableBody')}
               </Alert>
             ) : null}
 
@@ -246,14 +255,14 @@ export function SendPage({ onNavigate }: { onNavigate: (route: Route) => void })
               disabled={!canReview}
               icon={<SendIcon className="h-4 w-4" />}
             >
-              Review transaction
+              {t('send.review')}
             </Button>
           </div>
         </Card>
 
         <div className="flex flex-col gap-4 lg:gap-5">
           <Card>
-            <CardHeader title="Available balance" />
+            <CardHeader title={t('send.availableBalance')} />
             <div className="px-5 py-5">
               {unlocked === null ? (
                 <Skeleton className="h-8 w-40" />
@@ -265,28 +274,28 @@ export function SendPage({ onNavigate }: { onNavigate: (route: Route) => void })
               )}
               <p className="mt-2 text-[12px] text-ink-dim">
                 {balance.data?.blocksToUnlock
-                  ? `${balance.data.blocksToUnlock} blocks until recently received funds unlock.`
-                  : 'Only unlocked outputs can be spent.'}
+                  ? t('send.blocksToUnlock', { count: balance.data.blocksToUnlock })
+                  : t('send.onlyUnlocked')}
               </p>
             </div>
           </Card>
 
           <Card>
-            <CardHeader title="Before you send" />
+            <CardHeader title={t('send.beforeTitle')} />
             <div className="flex flex-col gap-3 px-5 py-4 text-[12px] leading-relaxed text-ink-muted">
               <span className="flex items-start gap-2">
                 <Info className="mt-0.5 h-3.5 w-3.5 shrink-0 text-ink-dim" />
-                Monero transfers cannot be reversed. Check the address twice.
+                {t('send.beforeIrreversible')}
               </span>
               <span className="flex items-start gap-2">
                 <TriangleAlert className="mt-0.5 h-3.5 w-3.5 shrink-0 text-warn/80" />
                 {info?.sync.synchronized
-                  ? 'Your wallet is synced with the network.'
-                  : 'Your wallet is still syncing — the balance shown may be incomplete.'}
+                  ? t('send.beforeSynced')
+                  : t('send.beforeSyncing')}
               </span>
               <span className="flex items-start gap-2">
                 <ArrowRight className="mt-0.5 h-3.5 w-3.5 shrink-0 text-ink-dim" />
-                Nothing is broadcast until you confirm the review dialog.
+                {t('send.beforeConfirm')}
               </span>
             </div>
           </Card>
@@ -296,15 +305,15 @@ export function SendPage({ onNavigate }: { onNavigate: (route: Route) => void })
       <Modal
         open={Boolean(prepared)}
         onClose={cancel}
-        title="Confirm transaction"
-        description="Review the amount and fee that the wallet will sign."
+        title={t('send.confirmTitle')}
+        description={t('send.confirmDesc')}
         footer={
           <>
             <Button variant="ghost" onClick={cancel} disabled={busy}>
-              Cancel
+              {t('common.cancel')}
             </Button>
             <Button variant="primary" onClick={() => void confirm()} loading={busy}>
-              Confirm &amp; Send
+              {t('send.confirmSend')}
             </Button>
           </>
         }
@@ -312,27 +321,26 @@ export function SendPage({ onNavigate }: { onNavigate: (route: Route) => void })
         {prepared ? (
           <div className="flex flex-col gap-4">
             <div className="divide-y divide-line-soft rounded-xl border border-line bg-surface-sunken px-4 py-1">
-              <Recap label="Recipient" value={shortenAddress(prepared.address, 18, 12)} mono />
-              <Recap label="Amount" value={`${formatXmr(prepared.amountAtomic)} XMR`} />
+              <Recap label={t('send.recipient')} value={shortenAddress(prepared.address, 18, 12)} mono />
+              <Recap label={t('send.amount')} value={`${formatXmr(prepared.amountAtomic)} XMR`} />
               <Recap
-                label={prepared.feeEstimated ? 'Estimated fee' : 'Network fee'}
-                value={prepared.feeAtomic ? `${formatXmr(prepared.feeAtomic)} XMR` : 'Calculated at send time'}
+                label={prepared.feeEstimated ? t('send.estimatedFee') : t('send.networkFee')}
+                value={prepared.feeAtomic ? `${formatXmr(prepared.feeAtomic)} XMR` : t('send.feeCalculatedLater')}
               />
               {prepared.support.enabled ? (
                 <Recap
-                  label={`Support (optional, ${prepared.support.percent}%)`}
-                  value={`${formatXmr(prepared.support.amountAtomic)} XMR → ${shortenAddress(prepared.support.address ?? '', 8, 6)}`}
+                  label={t('send.supportOptional', { percent: prepared.support.percent })}
+                  value={t('send.supportValue', { amount: formatXmr(prepared.support.amountAtomic), address: shortenAddress(prepared.support.address ?? '', 8, 6) })}
                 />
               ) : null}
-              <Recap label="Total" value={prepared.totalAtomic ? `${formatXmr(prepared.totalAtomic)} XMR` : '—'} emphasis />
+              <Recap label={t('send.total')} value={prepared.totalAtomic ? `${formatXmr(prepared.totalAtomic)} XMR` : t('common.emDash')} emphasis />
             </div>
             {supportPercent > 0 && !prepared.support.enabled ? (
               <Alert tone="info">
-                The support amount for this transfer is below one atomic unit, so nothing extra will be sent. Increase
-                the amount or switch support to “Off”.
+                {t('send.supportBelowAtomic')}
               </Alert>
             ) : null}
-            <Alert tone="warn">This transfer is broadcast to the Monero network and cannot be reversed.</Alert>
+            <Alert tone="warn">{t('send.confirmWarn')}</Alert>
           </div>
         ) : null}
       </Modal>

@@ -6,6 +6,7 @@ import { MoneroLogo } from '../components/MoneroLogo';
 import { useToast } from '../components/Toast';
 import { Alert, Button, Card, Input, Modal, StatusPill } from '../components/ui';
 import { useWalletList } from '../hooks/useApi';
+import { useI18n } from '../i18n/I18nProvider';
 import { shortenAddress } from '../lib/format';
 import type { Route } from '../lib/hashRouter';
 import { useWallet } from '../state/wallet';
@@ -14,6 +15,7 @@ export function WelcomePage({ onNavigate }: { onNavigate: (route: Route) => void
   const { info, reload } = useWallet();
   const { data: list, reload: reloadList } = useWalletList();
   const { push } = useToast();
+  const { t, locale } = useI18n();
 
   const [openDialog, setOpenDialog] = useState(false);
   const [name, setName] = useState('');
@@ -39,7 +41,7 @@ export function WelcomePage({ onNavigate }: { onNavigate: (route: Route) => void
       await api.openWallet(name.trim(), password);
       setPassword('');
       setOpenDialog(false);
-      push({ title: `Wallet "${name.trim()}" opened`, tone: 'success' });
+      push({ title: t('welcome.openedToast', { name: name.trim() }), tone: 'success' });
       onNavigate('dashboard');
       await Promise.all([reload(), reloadList()]);
     } catch (caught) {
@@ -56,36 +58,38 @@ export function WelcomePage({ onNavigate }: { onNavigate: (route: Route) => void
         <div className="mb-5 flex items-center justify-center gap-2.5">
           <MoneroLogo className="h-9 w-9 text-accent" />
           <div className="text-center">
-            <p className="text-[13px] font-semibold uppercase tracking-[0.28em] text-ink">Monero</p>
-            <p className="text-[10.5px] uppercase tracking-[0.28em] text-ink-dim">Wallet</p>
+            <p className="text-[13px] font-semibold uppercase tracking-[0.28em] text-ink">{t('common.monero')}</p>
+            <p className="text-[10.5px] uppercase tracking-[0.28em] text-ink-dim">{t('welcome.brandWallet')}</p>
           </div>
         </div>
 
         <Card className="p-5 sm:p-6">
           <div className="text-center">
-            <h1 className="text-[22px] font-semibold tracking-tight text-ink">Your private Monero wallet</h1>
-            <p className="mt-1.5 text-[12.5px] leading-relaxed text-ink-muted">
-              Keys stay on this computer. Every action is signed by the official monero-wallet-rpc running on 127.0.0.1.
-            </p>
+            <h1 className="text-[22px] font-semibold tracking-tight text-ink">{t('welcome.title')}</h1>
+            <p className="mt-1.5 text-[12.5px] leading-relaxed text-ink-muted">{t('welcome.subtitle')}</p>
           </div>
 
           <div className="mt-5 flex flex-wrap items-center justify-center gap-2">
-            <StatusPill tone={rpcOnline ? 'ok' : 'danger'}>Wallet RPC {rpcOnline ? 'online' : 'offline'}</StatusPill>
-            <StatusPill tone={daemonOnline ? 'ok' : 'warn'}>Node {daemonOnline ? 'reachable' : 'unreachable'}</StatusPill>
+            <StatusPill tone={rpcOnline ? 'ok' : 'danger'}>
+              {rpcOnline ? t('welcome.rpcOnline') : t('welcome.rpcOffline')}
+            </StatusPill>
+            <StatusPill tone={daemonOnline ? 'ok' : 'warn'}>
+              {daemonOnline ? t('welcome.nodeReachable') : t('welcome.nodeUnreachable')}
+            </StatusPill>
           </div>
 
           {!rpcOnline ? (
-            <Alert tone="danger" title="Wallet RPC Offline" className="mt-5">
+            <Alert tone="danger" title={t('welcome.rpcOfflineTitle')} className="mt-5">
               <span className="flex items-start gap-2">
                 <WifiOff className="mt-0.5 h-3.5 w-3.5" />
-                <span>{info?.daemon.error ?? 'monero-wallet-rpc is not answering. Start the wallet with Start.bat and try again.'}</span>
+                <span>{info?.daemon.error ?? t('welcome.rpcOfflineBody')}</span>
               </span>
             </Alert>
           ) : null}
 
           {wallets.length > 0 ? (
             <div className="mt-5 rounded-xl border border-line bg-surface-sunken">
-              <p className="label-caps px-4 pt-3.5">Existing wallet found</p>
+              <p className="label-caps px-4 pt-3.5">{t('welcome.existingFound')}</p>
               <div className="mt-1.5 divide-y divide-line-soft">
                 {wallets.map((wallet) => (
                   <div
@@ -95,7 +99,12 @@ export function WelcomePage({ onNavigate }: { onNavigate: (route: Route) => void
                     <div className="min-w-0">
                       <p className="truncate text-[13.5px] font-medium text-ink">{wallet.name}</p>
                       <p className="mt-0.5 text-[11.5px] text-ink-dim">
-                        {wallet.name}.keys · {wallet.modifiedAt ? new Date(wallet.modifiedAt).toLocaleDateString() : 'unknown date'}
+                        {t('welcome.keysMeta', {
+                          name: wallet.name,
+                          date: wallet.modifiedAt
+                            ? new Date(wallet.modifiedAt).toLocaleDateString(locale)
+                            : t('common.unknownDate'),
+                        })}
                       </p>
                     </div>
                     <Button
@@ -106,7 +115,7 @@ export function WelcomePage({ onNavigate }: { onNavigate: (route: Route) => void
                       icon={<KeyRound className="h-3.5 w-3.5" />}
                       className="w-full sm:w-auto"
                     >
-                      Open {wallet.name}
+                      {t('welcome.openNamed', { name: wallet.name })}
                     </Button>
                   </div>
                 ))}
@@ -116,7 +125,7 @@ export function WelcomePage({ onNavigate }: { onNavigate: (route: Route) => void
 
           <div className="mt-5 flex flex-col gap-2">
             <Button variant="primary" size="lg" onClick={() => startOpen()} disabled={!rpcOnline || wallets.length === 0}>
-              Open Wallet
+              {t('welcome.openWallet')}
             </Button>
             <Button
               variant="secondary"
@@ -125,20 +134,18 @@ export function WelcomePage({ onNavigate }: { onNavigate: (route: Route) => void
               disabled={!rpcOnline}
               icon={<Plus className="h-4 w-4" />}
             >
-              Create New Wallet
+              {t('welcome.createNew')}
             </Button>
           </div>
 
           {list ? (
             <p className="mt-4 truncate text-center text-[11px] text-ink-faint" title={list.walletDir}>
-              Wallet directory: {shortenAddress(list.walletDir, 22, 14)}
+              {t('welcome.directory', { path: shortenAddress(list.walletDir, 22, 14) })}
             </p>
           ) : null}
         </Card>
 
-        <p className="mt-5 text-center text-[11.5px] leading-relaxed text-ink-faint">
-          The wallet password is never stored in the browser and never written to logs.
-        </p>
+        <p className="mt-5 text-center text-[11.5px] leading-relaxed text-ink-faint">{t('welcome.passwordNeverStored')}</p>
       </div>
 
       <Modal
@@ -147,13 +154,13 @@ export function WelcomePage({ onNavigate }: { onNavigate: (route: Route) => void
           setOpenDialog(false);
           setPassword('');
         }}
-        title="Open wallet"
-        description="Provide the Monero wallet file name and its password."
+        title={t('welcome.openModalTitle')}
+        description={t('welcome.openModalDesc')}
         size="sm"
         footer={
           <>
             <Button variant="ghost" onClick={() => setOpenDialog(false)} disabled={busy}>
-              Cancel
+              {t('common.cancel')}
             </Button>
             <Button
               variant="primary"
@@ -161,7 +168,7 @@ export function WelcomePage({ onNavigate }: { onNavigate: (route: Route) => void
               loading={busy}
               disabled={name.trim().length === 0 || password.length === 0}
             >
-              Open wallet
+              {t('welcome.openWallet')}
             </Button>
           </>
         }
@@ -169,7 +176,7 @@ export function WelcomePage({ onNavigate }: { onNavigate: (route: Route) => void
         <div className="flex flex-col gap-4">
           {wallets.length > 1 ? (
             <div className="flex flex-col gap-1">
-              <span className="text-[12.5px] font-medium text-ink-muted">Wallet file</span>
+              <span className="text-[12.5px] font-medium text-ink-muted">{t('welcome.walletFile')}</span>
               {wallets.map((wallet) => (
                 <button
                   key={wallet.name}
@@ -185,10 +192,10 @@ export function WelcomePage({ onNavigate }: { onNavigate: (route: Route) => void
               ))}
             </div>
           ) : (
-            <Input label="Wallet file" value={name} onChange={(event) => setName(event.target.value)} placeholder="main" />
+            <Input label={t('welcome.walletFile')} value={name} onChange={(event) => setName(event.target.value)} placeholder="main" />
           )}
           <Input
-            label="Wallet password"
+            label={t('welcome.walletPassword')}
             type="password"
             value={password}
             autoFocus
@@ -199,7 +206,7 @@ export function WelcomePage({ onNavigate }: { onNavigate: (route: Route) => void
             placeholder="••••••••"
           />
           {error ? (
-            <Alert tone="danger" title={error.code === 'BAD_PASSWORD' ? 'Incorrect password' : 'Could not open the wallet'}>
+            <Alert tone="danger" title={error.code === 'BAD_PASSWORD' ? t('welcome.incorrectPassword') : t('welcome.openFailed')}>
               {error.message}
               {error.hint ? <p className="mt-1 text-ink-dim">{error.hint}</p> : null}
             </Alert>

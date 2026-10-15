@@ -6,24 +6,26 @@ import { TxDetailsModal, TxList } from '../components/Transactions';
 import { Button, Card, CardHeader, Input, Segmented, Skeleton } from '../components/ui';
 import type { TxRecord } from '../api/types';
 import { usePolling } from '../hooks/useApi';
+import { useI18n } from '../i18n/I18nProvider';
 import { useWallet } from '../state/wallet';
 
 type Filter = 'all' | 'received' | 'sent' | 'pending';
 
-const FILTERS: Array<{ value: Filter; label: string }> = [
-  { value: 'all', label: 'All' },
-  { value: 'received', label: 'Received' },
-  { value: 'sent', label: 'Sent' },
-  { value: 'pending', label: 'Pending' },
-];
-
 export function TransactionsPage() {
   const { rpcOffline } = useWallet();
+  const { t } = useI18n();
   const history = usePolling(() => api.transactions(300), 15_000, !rpcOffline);
   const [filter, setFilter] = useState<Filter>('all');
   const [query, setQuery] = useState('');
   const [selected, setSelected] = useState<TxRecord | null>(null);
   const [busy, setBusy] = useState(false);
+
+  const filters: Array<{ value: Filter; label: string }> = [
+    { value: 'all', label: t('txPage.filterAll') },
+    { value: 'received', label: t('txPage.filterReceived') },
+    { value: 'sent', label: t('txPage.filterSent') },
+    { value: 'pending', label: t('txPage.filterPending') },
+  ];
 
   const transactions = history.data?.transactions ?? [];
 
@@ -55,21 +57,21 @@ export function TransactionsPage() {
     <div className="flex flex-col gap-5">
       <Card>
         <CardHeader
-          title="Transaction history"
-          description={`${filtered.length} of ${transactions.length} transfers known to this wallet`}
+          title={t('txPage.title')}
+          description={t('txPage.description', { filtered: filtered.length, total: transactions.length })}
           action={
             <Button size="sm" variant="secondary" onClick={() => void refresh()} loading={busy}>
-              Refresh
+              {t('common.refresh')}
             </Button>
           }
         />
         <div className="flex flex-col gap-3 border-b border-line-soft px-4 py-3.5 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between sm:px-5">
-          <Segmented value={filter} options={FILTERS} onChange={setFilter} />
+          <Segmented value={filter} options={filters} onChange={setFilter} />
           <div className="w-full max-w-[320px]">
             <Input
               value={query}
               onChange={(event) => setQuery(event.target.value)}
-              placeholder="Search by txid, address or note"
+              placeholder={t('txPage.searchPlaceholder')}
               suffix={<Search className="h-4 w-4" />}
             />
           </div>

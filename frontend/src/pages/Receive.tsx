@@ -6,12 +6,14 @@ import { ApiError, api } from '../api/client';
 import { useToast } from '../components/Toast';
 import { Alert, Button, Card, CardHeader, CopyButton, Input, Skeleton } from '../components/ui';
 import { usePolling } from '../hooks/useApi';
+import { useI18n } from '../i18n/I18nProvider';
 import { shortenAddress } from '../lib/format';
 import { useWallet } from '../state/wallet';
 
 export function ReceivePage() {
   const { info, rpcOffline } = useWallet();
   const { push } = useToast();
+  const { t } = useI18n();
   const addresses = usePolling(api.address, 20_000, !rpcOffline);
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [label, setLabel] = useState('');
@@ -37,7 +39,7 @@ export function ReceivePage() {
       const result = await api.createSubaddress(label);
       setLabel('');
       setSelectedIndex(result.index);
-      push({ title: `Subaddress #${result.index} created`, tone: 'success' });
+      push({ title: t('receive.createdToast', { index: result.index }), tone: 'success' });
       await addresses.reload();
     } catch (caught) {
       setError(caught as ApiError);
@@ -47,13 +49,15 @@ export function ReceivePage() {
   };
 
   const address = selected?.address ?? info?.wallet?.address ?? '';
+  const kind =
+    selected && selected.index > 0 ? t('receive.subaddressN', { index: selected.index }) : t('receive.primary');
 
   return (
     <div className="grid grid-cols-1 items-start gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.05fr)] lg:gap-5">
       <Card className="p-4 sm:p-6">
-        <p className="label-caps">Your Monero address</p>
+        <p className="label-caps">{t('receive.yourAddress')}</p>
         <p className="mt-1 text-[12.5px] text-ink-muted">
-          {selected && selected.index > 0 ? `Subaddress #${selected.index}` : 'Primary address'} · {info?.wallet?.network ?? 'mainnet'}
+          {t('receive.meta', { kind, network: info?.wallet?.network ?? t('common.mainnet') })}
         </p>
 
         <div className="mt-5 flex justify-center">
@@ -75,43 +79,43 @@ export function ReceivePage() {
         </div>
 
         <div className="mt-5 rounded-xl border border-line bg-surface-sunken p-4">
-          <p className="mono-address text-ink">{address || '—'}</p>
+          <p className="mono-address text-ink">{address || t('common.emDash')}</p>
         </div>
 
         <div className="mt-4">
-          <CopyButton value={address} label="Copy Address" variant="primary" size="md" />
+          <CopyButton value={address} label={t('receive.copyAddress')} variant="primary" size="md" />
         </div>
 
         <Alert tone="info" className="mt-4">
-          Only Monero (XMR) on this network can be received at this address. Funds sent on another chain cannot be recovered.
+          {t('receive.onlyXmr')}
         </Alert>
       </Card>
 
       <Card>
         <CardHeader
-          title="Addresses &amp; subaddresses"
-          description="Create a subaddress to separate payments and keep the primary address private"
+          title={t('receive.addressesTitle')}
+          description={t('receive.addressesDesc')}
           action={<span className="num text-[12px] text-ink-dim">{subaddresses.length}</span>}
         />
 
         <div className="flex flex-col gap-3 border-b border-line-soft px-5 py-4 sm:flex-row sm:items-end">
           <Input
-            label="Label (optional)"
+            label={t('receive.labelOptional')}
             value={label}
             onChange={(event) => setLabel(event.target.value)}
-            placeholder="e.g. Exchange deposit"
+            placeholder={t('receive.labelPlaceholder')}
             onKeyDown={(event) => {
               if (event.key === 'Enter' && !busy) void createSubaddress();
             }}
           />
           <Button variant="secondary" onClick={() => void createSubaddress()} loading={busy} icon={<Plus className="h-4 w-4" />}>
-            Create new subaddress
+            {t('receive.createSubaddress')}
           </Button>
         </div>
 
         {error ? (
           <div className="px-5 pt-4">
-            <Alert tone="danger" title="Could not create the subaddress">
+            <Alert tone="danger" title={t('receive.createFailed')}>
               {error.message}
             </Alert>
           </div>
@@ -135,13 +139,13 @@ export function ReceivePage() {
                 >
                   <button type="button" onClick={() => setSelectedIndex(entry.index)} className="min-w-0 flex-1 text-left">
                     <p className="flex items-center gap-2 text-[13px] font-medium text-ink">
-                      {entry.index === 0 ? 'Primary address' : `Subaddress #${entry.index}`}
+                      {entry.index === 0 ? t('receive.primary') : t('receive.subaddressN', { index: entry.index })}
                       {entry.label && entry.index !== 0 ? (
                         <span className="text-[11.5px] font-normal text-ink-dim">· {entry.label}</span>
                       ) : null}
                       {entry.used ? (
                         <span className="rounded-full border border-ok/25 bg-ok/[0.08] px-2 py-0.5 text-[10.5px] font-medium text-ok">
-                          used
+                          {t('receive.used')}
                         </span>
                       ) : null}
                     </p>

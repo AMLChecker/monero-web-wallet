@@ -10,6 +10,8 @@ import {
 import { useState } from 'react';
 
 import type { TxRecord } from '../api/types';
+import type { TranslateFn } from '../i18n/types';
+import { useI18n } from '../i18n/I18nProvider';
 import { copyText } from '../lib/clipboard';
 import {
   formatDateTime,
@@ -26,10 +28,10 @@ const SPENDABLE_AFTER = 10;
 /** Rough block time, used only for the "≈ n min" hint. */
 const MINUTES_PER_BLOCK = 2;
 
-export function txTitle(tx: TxRecord): string {
-  if (tx.failed) return 'Failed';
-  if (tx.pending) return 'Pending';
-  return tx.direction === 'received' ? 'Received' : 'Sent';
+export function txTitle(tx: TxRecord, t: TranslateFn): string {
+  if (tx.failed) return t('tx.failed');
+  if (tx.pending) return t('tx.pending');
+  return tx.direction === 'received' ? t('tx.received') : t('tx.sent');
 }
 
 /**
@@ -59,13 +61,14 @@ export function ConfirmationsMeter({
   compact?: boolean;
   className?: string;
 }) {
+  const { t } = useI18n();
   const filled = Math.max(0, Math.min(SPENDABLE_AFTER, count));
   const tone = filled >= SPENDABLE_AFTER ? 'bg-ok' : locked ? 'bg-warn' : 'bg-accent';
   return (
     <span
       className={`inline-flex items-center ${compact ? 'gap-[3px]' : 'gap-1'} ${className}`}
       role="img"
-      aria-label={`${filled} of ${SPENDABLE_AFTER} confirmations`}
+      aria-label={t('tx.confirmationsAria', { filled, total: SPENDABLE_AFTER })}
     >
       {Array.from({ length: SPENDABLE_AFTER }, (_, index) => (
         <span
@@ -80,6 +83,7 @@ export function ConfirmationsMeter({
 }
 
 function TxBadge({ tx }: { tx: TxRecord }) {
+  const { t } = useI18n();
   const styles = tx.failed
     ? 'border-danger/30 bg-danger/[0.08] text-danger'
     : tx.pending
@@ -92,20 +96,21 @@ function TxBadge({ tx }: { tx: TxRecord }) {
   return (
     <span className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[11.5px] font-medium ${styles}`}>
       <Icon className="h-3.5 w-3.5" />
-      {txTitle(tx)}
+      {txTitle(tx, t)}
     </span>
   );
 }
 
 export function TxAmount({ tx }: { tx: TxRecord }) {
+  const { t } = useI18n();
   if (isSelfTransfer(tx)) {
-    return <span className="text-[12.5px] font-medium text-ink-muted">Self-transfer</span>;
+    return <span className="text-[12.5px] font-medium text-ink-muted">{t('tx.selfTransfer')}</span>;
   }
   const sign = tx.direction === 'received' ? '+' : '-';
   const color = tx.failed ? 'text-ink-faint line-through' : tx.direction === 'received' ? 'text-ok' : 'text-ink';
   return (
     <span className={`num text-[14px] font-medium ${color}`}>
-      {sign} {formatXmrCompact(tx.amountAtomic)} <span className="text-[11.5px] text-ink-dim">XMR</span>
+      {sign} {formatXmrCompact(tx.amountAtomic)} <span className="text-[11.5px] text-ink-dim">{t('common.xmr')}</span>
     </span>
   );
 }
@@ -169,12 +174,13 @@ export function TxRow({ tx, onSelect }: { tx: TxRecord; onSelect: (tx: TxRecord)
 }
 
 export function TxList({ transactions, onSelect }: { transactions: TxRecord[]; onSelect: (tx: TxRecord) => void }) {
+  const { t } = useI18n();
   if (transactions.length === 0) {
     return (
       <EmptyState
         icon={<Clock className="h-6 w-6" />}
-        title="No transactions yet"
-        description="Incoming and outgoing transfers appear here as soon as the wallet has synchronised with the network."
+        title={t('tx.emptyTitle')}
+        description={t('tx.emptyDesc')}
       />
     );
   }
@@ -189,6 +195,7 @@ export function TxList({ transactions, onSelect }: { transactions: TxRecord[]; o
 
 export function TxDetailsModal({ tx, onClose }: { tx: TxRecord | null; onClose: () => void }) {
   const { push } = useToast();
+  const { t } = useI18n();
   const [copied, setCopied] = useState(false);
 
   if (!tx) return null;
@@ -196,7 +203,7 @@ export function TxDetailsModal({ tx, onClose }: { tx: TxRecord | null; onClose: 
   const copyTxid = async () => {
     const ok = await copyText(tx.txid);
     setCopied(ok);
-    push({ title: ok ? 'Transaction id copied' : 'Could not copy', tone: ok ? 'success' : 'error' });
+    push({ title: ok ? t('tx.copied') : t('tx.copyFailed'), tone: ok ? 'success' : 'error' });
   };
 
   const selfTransfer = isSelfTransfer(tx);
@@ -207,22 +214,22 @@ export function TxDetailsModal({ tx, onClose }: { tx: TxRecord | null; onClose: 
     <Modal
       open={Boolean(tx)}
       onClose={onClose}
-      title={txTitle(tx)}
+      title={txTitle(tx, t)}
       description={formatDateTime(tx.timestamp)}
       size="lg"
-      footer={<CopyButton value={tx.txid} label="Copy transaction id" />}
+      footer={<CopyButton value={tx.txid} label={t('tx.copyTxid')} />}
     >
       <div className="mb-4 rounded-xl border border-line bg-surface-sunken px-4 py-3 text-center">
-        <p className="label-caps">{selfTransfer ? 'Self-transfer' : 'Amount'}</p>
+        <p className="label-caps">{selfTransfer ? t('tx.selfTransfer') : t('tx.amount')}</p>
         {selfTransfer ? (
           <>
             <p className="mt-1 text-[15px] font-semibold text-ink sm:text-[16px]">
-              This went to your own address — the funds stayed in this wallet
+              {t('tx.selfTransferExplain')}
             </p>
             <p className="num mt-1 text-[11.5px] text-ink-dim">
               {tx.feeAtomic
-                ? `Only the network fee left your balance: ${formatXmr(tx.feeAtomic)} XMR`
-                : 'Only the network fee left your balance.'}
+                ? t('tx.selfFeeOnly', { fee: formatXmr(tx.feeAtomic) })
+                : t('tx.selfFeeOnlyGeneric')}
             </p>
           </>
         ) : (
@@ -234,71 +241,83 @@ export function TxDetailsModal({ tx, onClose }: { tx: TxRecord | null; onClose: 
             >
               {tx.direction === 'received' ? '+' : '-'}
               {formatXmr(tx.amountAtomic)}{' '}
-              <span className="text-[13px] font-normal text-ink-dim">XMR</span>
+              <span className="text-[13px] font-normal text-ink-dim">{t('common.xmr')}</span>
             </p>
             {tx.feeAtomic && tx.direction === 'sent' ? (
-              <p className="num mt-1 text-[11.5px] text-ink-dim">Network fee {formatXmr(tx.feeAtomic)} XMR</p>
+              <p className="num mt-1 text-[11.5px] text-ink-dim">{t('tx.networkFeeAmount', { fee: formatXmr(tx.feeAtomic) })}</p>
             ) : null}
           </>
         )}
       </div>
 
       <div className="divide-y divide-line-soft">
-        <KeyValue label="Status">
+        <KeyValue label={t('tx.status')}>
           <span className="inline-flex items-center gap-2">
-            {tx.failed ? 'Failed' : tx.pending ? 'Pending confirmation' : tx.confirmations && tx.confirmations >= 10 ? 'Confirmed' : 'Confirmed (locked)'}
+            {tx.failed
+              ? t('tx.statusFailed')
+              : tx.pending
+                ? t('tx.statusPending')
+                : tx.confirmations && tx.confirmations >= 10
+                  ? t('tx.statusConfirmed')
+                  : t('tx.statusConfirmedLocked')}
           </span>
         </KeyValue>
-        <KeyValue label="Confirmations">
+        <KeyValue label={t('tx.confirmations')}>
           <span className="flex w-full flex-col items-start gap-2 sm:items-end">
             <span className="num">
               {confirmations} / {SPENDABLE_AFTER}
-              {confirmations >= SPENDABLE_AFTER ? '' : tx.locked ? ' — locked' : ''}
+              {confirmations >= SPENDABLE_AFTER ? '' : tx.locked ? t('tx.lockedSuffix') : ''}
             </span>
             <ConfirmationsMeter count={confirmations} locked={tx.locked} />
           </span>
         </KeyValue>
-        <KeyValue label="Block height">
-          <span className="num">{tx.height ?? 'in pool'}</span>
+        <KeyValue label={t('tx.blockHeight')}>
+          <span className="num">{tx.height ?? t('tx.inPool')}</span>
         </KeyValue>
-        <KeyValue label={tx.direction === 'sent' ? 'Recipient' : 'Received at'}>
+        <KeyValue label={tx.direction === 'sent' ? t('tx.recipient') : t('tx.receivedAt')}>
           {tx.address ? (
             <span className="mono-address block max-w-full text-left text-ink-muted sm:max-w-[380px] sm:text-right">{tx.address}</span>
           ) : (
-            <span className="text-ink-dim">—</span>
+            <span className="text-ink-dim">{t('common.emDash')}</span>
           )}
         </KeyValue>
         {tx.subaddressIndex !== null && tx.subaddressIndex > 0 ? (
-          <KeyValue label="Subaddress index">
+          <KeyValue label={t('tx.subaddressIndex')}>
             <span className="num">#{tx.subaddressIndex}</span>
           </KeyValue>
         ) : null}
         {tx.paymentId ? (
-          <KeyValue label="Payment id">
+          <KeyValue label={t('tx.paymentId')}>
             <span className="font-mono text-[11.5px]">{tx.paymentId}</span>
           </KeyValue>
         ) : null}
         {tx.note ? (
-          <KeyValue label="Note">
+          <KeyValue label={t('tx.note')}>
             <span>{tx.note}</span>
           </KeyValue>
         ) : null}
-        <KeyValue label="Unlock">
+        <KeyValue label={t('tx.unlock')}>
           {tx.locked ? (
             <span className="text-warn">
-              Locked — spendable after about {SPENDABLE_AFTER} confirmations
-              {blocksLeft > 0 ? ` (${blocksLeft} block${blocksLeft === 1 ? '' : 's'}, ≈ ${blocksLeft * MINUTES_PER_BLOCK} min)` : ''}
+              {t('tx.unlockLocked', { count: SPENDABLE_AFTER })}
+              {blocksLeft > 0
+                ? t('tx.unlockBlocks', {
+                    blocks: blocksLeft,
+                    plural: blocksLeft === 1 ? '' : 's',
+                    minutes: blocksLeft * MINUTES_PER_BLOCK,
+                  })
+                : ''}
             </span>
           ) : (
-            <span className="text-ok">Spendable</span>
+            <span className="text-ok">{t('tx.spendable')}</span>
           )}
         </KeyValue>
-        <KeyValue label="Transaction id">
+        <KeyValue label={t('tx.txid')}>
           <button
             type="button"
             onClick={copyTxid}
             className="group inline-flex max-w-full items-start gap-2 text-left font-mono text-[11.5px] text-ink-muted transition hover:text-ink sm:max-w-[420px] sm:text-right"
-            title="Copy transaction id"
+            title={t('tx.copyTxid')}
           >
             <span className="break-all">{tx.txid}</span>
             <Copy className={`h-3.5 w-3.5 shrink-0 ${copied ? 'text-ok' : 'text-ink-faint group-hover:text-ink-muted'}`} />

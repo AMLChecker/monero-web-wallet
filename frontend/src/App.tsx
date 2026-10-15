@@ -6,6 +6,7 @@ import { HeaderActions, NodePills, ServiceBanners } from './components/StatusStr
 import { Sidebar } from './components/Sidebar';
 import { ToastProvider, useToast } from './components/Toast';
 import { Spinner } from './components/ui';
+import { I18nProvider, useI18n } from './i18n/I18nProvider';
 import { useHashRoute, WALLET_ROUTES, type Route } from './lib/hashRouter';
 import { CreateWalletPage } from './pages/CreateWallet';
 import { DashboardPage } from './pages/Dashboard';
@@ -17,24 +18,15 @@ import { TransactionsPage } from './pages/Transactions';
 import { WelcomePage } from './pages/Welcome';
 import { WalletProvider, useWallet } from './state/wallet';
 
-const PAGE_META: Record<Route, { title: string; subtitle: string }> = {
-  welcome: { title: 'Monero Wallet', subtitle: 'Your private Monero wallet' },
-  create: { title: 'Create wallet', subtitle: 'Generate a new Monero wallet on this computer' },
-  dashboard: { title: 'Dashboard', subtitle: 'Balance, sync progress and recent activity' },
-  send: { title: 'Send', subtitle: 'Build, review and broadcast a transaction' },
-  receive: { title: 'Receive', subtitle: 'Share your address or create a subaddress' },
-  transactions: { title: 'Transactions', subtitle: 'Every transfer known to this wallet' },
-  support: { title: 'Support', subtitle: 'Voluntary donation to the developer of this wallet' },
-  settings: { title: 'Settings', subtitle: 'Wallet, node and security options' },
-};
-
 export default function App() {
   return (
-    <ToastProvider>
-      <WalletProvider>
-        <Shell />
-      </WalletProvider>
-    </ToastProvider>
+    <I18nProvider>
+      <ToastProvider>
+        <WalletProvider>
+          <Shell />
+        </WalletProvider>
+      </ToastProvider>
+    </I18nProvider>
   );
 }
 
@@ -42,10 +34,26 @@ function Shell() {
   const [route, navigate] = useHashRoute();
   const { info, loading, refreshWallet, refreshing, reload } = useWallet();
   const { push } = useToast();
+  const { t } = useI18n();
   const [locking, setLocking] = useState(false);
   const [navOpen, setNavOpen] = useState(false);
 
   const walletOpen = Boolean(info?.wallet?.open);
+
+  const pageMeta = useMemo(
+    () =>
+      ({
+        welcome: { title: t('page.welcome.title'), subtitle: t('page.welcome.subtitle') },
+        create: { title: t('page.create.title'), subtitle: t('page.create.subtitle') },
+        dashboard: { title: t('page.dashboard.title'), subtitle: t('page.dashboard.subtitle') },
+        send: { title: t('page.send.title'), subtitle: t('page.send.subtitle') },
+        receive: { title: t('page.receive.title'), subtitle: t('page.receive.subtitle') },
+        transactions: { title: t('page.transactions.title'), subtitle: t('page.transactions.subtitle') },
+        support: { title: t('page.support.title'), subtitle: t('page.support.subtitle') },
+        settings: { title: t('page.settings.title'), subtitle: t('page.settings.subtitle') },
+      }) satisfies Record<Route, { title: string; subtitle: string }>,
+    [t],
+  );
 
   const closeNav = useCallback(() => setNavOpen(false), []);
 
@@ -72,11 +80,11 @@ function Shell() {
     setLocking(true);
     try {
       await api.closeWallet();
-      push({ title: 'Wallet locked', description: 'The session was closed on the backend.', tone: 'success' });
+      push({ title: t('app.walletLocked'), description: t('app.walletLockedDesc'), tone: 'success' });
       navigate('welcome');
       await reload();
-    } catch (error) {
-      push({ title: 'Could not lock the wallet', tone: 'error' });
+    } catch {
+      push({ title: t('app.lockFailed'), tone: 'error' });
     } finally {
       setLocking(false);
     }
@@ -101,7 +109,7 @@ function Shell() {
       default:
         return <WelcomePage onNavigate={navigate} />;
     }
-  }, [route, navigate, lockWallet, locking]);
+  }, [route, navigate, locking]);
 
   const isStandalone = route === 'welcome' || route === 'create';
 
@@ -109,7 +117,7 @@ function Shell() {
     return (
       <div className="flex h-full items-center justify-center gap-3 text-ink-muted">
         <Spinner className="h-5 w-5" />
-        <span className="text-sm">Connecting to the local wallet backend…</span>
+        <span className="text-sm">{t('app.connecting')}</span>
       </div>
     );
   }
@@ -154,15 +162,15 @@ function Shell() {
                 type="button"
                 onClick={() => setNavOpen(true)}
                 className="-ml-1 rounded-lg p-2 text-ink-muted transition hover:bg-white/5 hover:text-ink lg:hidden"
-                aria-label="Open navigation"
+                aria-label={t('common.openNavigation')}
               >
                 <Menu className="h-5 w-5" />
               </button>
               <div className="min-w-0">
                 <h1 className="truncate text-[17px] font-semibold tracking-tight text-ink lg:text-[20px]">
-                  {PAGE_META[route].title}
+                  {pageMeta[route].title}
                 </h1>
-                <p className="mt-0.5 truncate text-[12px] text-ink-muted lg:mt-1 lg:text-[12.5px]">{PAGE_META[route].subtitle}</p>
+                <p className="mt-0.5 truncate text-[12px] text-ink-muted lg:mt-1 lg:text-[12.5px]">{pageMeta[route].subtitle}</p>
               </div>
             </div>
 

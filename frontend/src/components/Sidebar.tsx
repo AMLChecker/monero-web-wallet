@@ -10,18 +10,19 @@ import {
 } from 'lucide-react';
 
 import type { WalletInfo } from '../api/types';
+import { useI18n } from '../i18n/I18nProvider';
 import { formatNumber, percent, shortenAddress } from '../lib/format';
 import type { Route } from '../lib/hashRouter';
 import { MoneroLogo } from './MoneroLogo';
 import { Button } from './ui';
 
-const NAV: Array<{ route: Route; label: string; icon: typeof LayoutDashboard }> = [
-  { route: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
-  { route: 'send', label: 'Send', icon: ArrowUpFromLine },
-  { route: 'receive', label: 'Receive', icon: ArrowDownToLine },
-  { route: 'transactions', label: 'Transactions', icon: ArrowLeftRight },
-  { route: 'support', label: 'Support', icon: HeartHandshake },
-  { route: 'settings', label: 'Settings', icon: SettingsIcon },
+const NAV_ICONS: Array<{ route: Route; icon: typeof LayoutDashboard; labelKey: 'nav.dashboard' | 'nav.send' | 'nav.receive' | 'nav.transactions' | 'nav.support' | 'nav.settings' }> = [
+  { route: 'dashboard', labelKey: 'nav.dashboard', icon: LayoutDashboard },
+  { route: 'send', labelKey: 'nav.send', icon: ArrowUpFromLine },
+  { route: 'receive', labelKey: 'nav.receive', icon: ArrowDownToLine },
+  { route: 'transactions', labelKey: 'nav.transactions', icon: ArrowLeftRight },
+  { route: 'support', labelKey: 'nav.support', icon: HeartHandshake },
+  { route: 'settings', labelKey: 'nav.settings', icon: SettingsIcon },
 ];
 
 export function Sidebar({
@@ -41,6 +42,7 @@ export function Sidebar({
   className?: string;
   onClose?: () => void;
 }) {
+  const { t } = useI18n();
   const rpcOnline = info?.rpc.online ?? false;
   const daemonOnline = info?.daemon.online ?? false;
   const sync = info?.sync;
@@ -52,15 +54,15 @@ export function Sidebar({
       <div className="flex items-center gap-2.5 px-5 pb-5 pt-6">
         <MoneroLogo className="h-7 w-7 shrink-0 text-accent" />
         <div className="min-w-0 leading-tight">
-          <p className="text-[12px] font-semibold uppercase tracking-[0.16em] text-ink">Monero</p>
-          <p className="text-[11px] uppercase tracking-[0.16em] text-ink-dim">Wallet</p>
+          <p className="text-[12px] font-semibold uppercase tracking-[0.16em] text-ink">{t('common.monero')}</p>
+          <p className="text-[11px] uppercase tracking-[0.16em] text-ink-dim">{t('common.wallet')}</p>
         </div>
         {onClose ? (
           <button
             type="button"
             onClick={onClose}
             className="ml-auto rounded-lg p-1.5 text-ink-dim transition hover:bg-white/5 hover:text-ink"
-            aria-label="Close navigation"
+            aria-label={t('common.closeNavigation')}
           >
             <X className="h-4 w-4" />
           </button>
@@ -68,7 +70,7 @@ export function Sidebar({
       </div>
 
       <nav className="flex flex-col gap-0.5 px-2.5">
-        {NAV.map((item) => {
+        {NAV_ICONS.map((item) => {
           const active = route === item.route;
           const Icon = item.icon;
           return (
@@ -85,7 +87,7 @@ export function Sidebar({
             >
               {active ? <span className="absolute left-0 top-1/2 h-5 w-[2px] -translate-y-1/2 rounded-full bg-accent" /> : null}
               <Icon className={`h-4 w-4 ${active ? 'text-accent' : 'text-ink-dim group-hover:text-ink-muted'}`} />
-              {item.label}
+              {t(item.labelKey)}
             </button>
           );
         })}
@@ -93,17 +95,17 @@ export function Sidebar({
 
       <div className="mt-auto flex flex-col gap-3 px-4 pb-5 pt-6">
         <div className="rounded-xl border border-line bg-surface/70 p-3">
-          <p className="label-caps">Wallet</p>
-          <p className="mt-1.5 truncate text-[13px] font-medium text-ink">{info?.wallet?.name ?? '—'}</p>
+          <p className="label-caps">{t('common.wallet')}</p>
+          <p className="mt-1.5 truncate text-[13px] font-medium text-ink">{info?.wallet?.name ?? t('common.emDash')}</p>
           <p className="mt-0.5 truncate font-mono text-[11px] text-ink-dim">
-            {info?.wallet?.address ? shortenAddress(info.wallet.address, 10, 6) : 'not open'}
+            {info?.wallet?.address ? shortenAddress(info.wallet.address, 10, 6) : t('common.notOpen')}
           </p>
           <div className="mt-2.5 flex items-center justify-between text-[11px] text-ink-dim">
-            <span>Height</span>
+            <span>{t('sidebar.height')}</span>
             <span className="num text-ink-muted">{formatNumber(sync?.walletHeight ?? null)}</span>
           </div>
           <div className="mt-1 flex items-center justify-between text-[11px] text-ink-dim">
-            <span>Synced</span>
+            <span>{t('sidebar.synced')}</span>
             <span className="num text-ink-muted">{percent(sync?.progressPercent ?? null)}</span>
           </div>
           <Button
@@ -114,20 +116,20 @@ export function Sidebar({
             loading={refreshing}
             icon={<RefreshCw className="h-3.5 w-3.5" />}
           >
-            Refresh
+            {t('common.refresh')}
           </Button>
         </div>
 
         <div className="space-y-1.5 px-1 text-[11.5px]">
           <StatusRow
-            label="Node status"
+            label={t('sidebar.nodeStatus')}
             tone={daemonOnline ? 'ok' : 'danger'}
-            value={daemonOnline ? info?.daemon.status ?? 'online' : 'offline'}
+            value={daemonOnline ? info?.daemon.status ?? t('common.online') : t('common.offline')}
           />
           <StatusRow
-            label="Wallet status"
+            label={t('sidebar.walletStatus')}
             tone={rpcOnline ? (sync?.synchronized ? 'ok' : 'warn') : 'danger'}
-            value={rpcOnline ? (sync?.synchronized ? 'synced' : 'syncing') : 'RPC offline'}
+            value={rpcOnline ? (sync?.synchronized ? t('sidebar.syncedLower') : t('sidebar.syncing')) : t('sidebar.rpcOffline')}
           />
         </div>
       </div>

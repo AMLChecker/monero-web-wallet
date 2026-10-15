@@ -8,6 +8,7 @@ import { useToast } from '../components/Toast';
 import { Alert, Button, Card, CardHeader, CopyButton, Input, Modal, Skeleton } from '../components/ui';
 import { formatXmr, isValidAmountInput, shortenAddress } from '../lib/format';
 import type { Route } from '../lib/hashRouter';
+import { useI18n } from '../i18n/I18nProvider';
 import { useWallet } from '../state/wallet';
 
 /**
@@ -23,6 +24,7 @@ const NETWORK_PRIORITY = 0;
 export function SupportPage({ onNavigate }: { onNavigate: (route: Route) => void }) {
   const { info, rpcOffline, daemonOffline } = useWallet();
   const { push } = useToast();
+  const { t } = useI18n();
 
   const [support, setSupport] = useState<ProjectSupport | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
@@ -44,9 +46,7 @@ export function SupportPage({ onNavigate }: { onNavigate: (route: Route) => void
         const apiError = caught as ApiError;
         // A backend started before this page existed has no /api/support route yet.
         setLoadError(
-          apiError.status === 404
-            ? 'This backend predates the support endpoint — restart the wallet (Stop.bat, then Start.bat) and reload this page.'
-            : apiError.message,
+          apiError.status === 404 ? t('support.backendMissing') : apiError.message,
         );
       });
     return () => {
@@ -86,7 +86,7 @@ export function SupportPage({ onNavigate }: { onNavigate: (route: Route) => void
       const result = await api.send(prepared.prepareId);
       setSent(result);
       setPrepared(null);
-      push({ title: 'Thank you!', description: 'Your support was broadcast to the network.', tone: 'success' });
+      push({ title: t('support.thankYouToast'), description: t('support.thankYouToastDesc'), tone: 'success' });
     } catch (caught) {
       const apiError = caught as ApiError;
       setError(apiError);
@@ -110,39 +110,38 @@ export function SupportPage({ onNavigate }: { onNavigate: (route: Route) => void
               <PartyPopper className="h-5 w-5 text-ok" />
             </span>
             <div>
-              <h1 className="text-[18px] font-semibold tracking-tight text-ink">Thank you for supporting the project</h1>
+              <h1 className="text-[18px] font-semibold tracking-tight text-ink">{t('support.sentTitle')}</h1>
               <p className="text-[12.5px] text-ink-muted">
-                Your donation was signed locally and broadcast to the Monero network.
+                {t('support.sentSubtitle')}
               </p>
             </div>
           </div>
 
           <p className="mt-5 text-[13px] leading-relaxed text-ink-muted">
-            This wallet has no investors, no advertising and no telemetry — donations are the only thing that pays for
-            the time it takes to keep it honest. Thank you for keeping it going.
+            {t('support.sentBody')}
           </p>
 
           <div className="mt-6 divide-y divide-line-soft rounded-xl border border-line bg-surface-sunken px-4 py-1">
-            <Recap label="Donation" value={`${formatXmr(sent.amountAtomic)} XMR`} />
-            <Recap label="Network fee" value={sent.feeAtomic ? `${formatXmr(sent.feeAtomic)} XMR` : '—'} />
-            <Recap label="Sent to" value={shortenAddress(sent.address, 16, 10)} mono />
-            <Recap label="Transaction id" value={sent.txHash} mono />
+            <Recap label={t('support.donation')} value={`${formatXmr(sent.amountAtomic)} XMR`} />
+            <Recap label={t('support.networkFee')} value={sent.feeAtomic ? `${formatXmr(sent.feeAtomic)} XMR` : t('common.emDash')} />
+            <Recap label={t('support.sentTo')} value={shortenAddress(sent.address, 16, 10)} mono />
+            <Recap label={t('support.txid')} value={sent.txHash} mono />
           </div>
 
           <div className="mt-5 flex flex-col gap-2 sm:flex-row sm:flex-wrap">
-            <CopyButton value={sent.txHash} label="Copy TXID" variant="secondary" />
+            <CopyButton value={sent.txHash} label={t('support.copyTxid')} variant="secondary" />
             <Button variant="primary" onClick={() => setSent(null)}>
-              Donate again
+              {t('support.donateAgain')}
             </Button>
             <Button variant="ghost" onClick={() => onNavigate('transactions')}>
-              View transactions
+              {t('support.viewTx')}
             </Button>
           </div>
         </Card>
 
         <div className="flex flex-col gap-4 lg:gap-5">
           <Card>
-            <CardHeader title="Donation address" description="Same address, if you prefer your own wallet" />
+            <CardHeader title={t('support.addressTitle')} description={t('support.addressDescAlt')} />
             <div className="px-5 py-5">
               <AddressBlock address={address} />
             </div>
@@ -157,20 +156,19 @@ export function SupportPage({ onNavigate }: { onNavigate: (route: Route) => void
       <div className="grid grid-cols-1 items-start gap-4 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)] lg:gap-5">
         <Card>
           <CardHeader
-            title="Support the project"
-            description="A voluntary donation to the person who builds and maintains this wallet."
+            title={t('support.formTitle')}
+            description={t('support.formDesc')}
           />
           <div className="flex flex-col gap-4 px-5 py-5">
             <div className="flex items-start gap-3 rounded-xl border border-line bg-surface-sunken px-3.5 py-3">
               <HeartHandshake className="mt-0.5 h-4 w-4 shrink-0 text-accent" />
               <p className="text-[12.5px] leading-relaxed text-ink-muted">
-                Thank you for even opening this page. The wallet is free, open source and has no way to charge you —
-                everything here is a gift, and the whole amount reaches the developer address below.
+                {t('support.intro')}
               </p>
             </div>
 
             <div>
-              <p className="mb-1.5 text-[12.5px] font-medium text-ink-muted">Amount</p>
+              <p className="mb-1.5 text-[12.5px] font-medium text-ink-muted">{t('support.amount')}</p>
               <div className="mb-2 flex flex-wrap gap-2">
                 {PRESETS.map((preset) => {
                   const active = amount.trim() === preset;
@@ -185,42 +183,40 @@ export function SupportPage({ onNavigate }: { onNavigate: (route: Route) => void
                           : 'border-line bg-surface-sunken text-ink-dim hover:text-ink-muted'
                       }`}
                     >
-                      {preset} XMR
+                      {t('support.preset', { amount: preset })}
                     </button>
                   );
                 })}
               </div>
               <Input
-                label="Custom amount"
+                label={t('support.customAmount')}
                 value={amount}
                 inputMode="decimal"
                 placeholder="0.000000"
                 onChange={(event) => setAmount(event.target.value.replace(/[^0-9.,]/g, ''))}
                 suffix={<span className="pr-1">XMR</span>}
-                hint="Any amount you like — there is no minimum and no suggested percentage."
+                hint={t('support.customHint')}
               />
             </div>
 
-            <Alert tone="info" title="No commission added">
-              This wallet charges nothing of its own on a donation: the full amount goes to the address below and the
-              only extra cost is the Monero network fee, which you see before you sign.
+            <Alert tone="info" title={t('support.noCommissionTitle')}>
+              {t('support.noCommissionBody')}
             </Alert>
 
             {walletEmpty ? (
-              <Alert tone="warn" title="Nothing to spend yet">
-                This wallet has no unlocked XMR, so a donation cannot be built. Receive some first, or send from another
-                wallet to the address below.
+              <Alert tone="warn" title={t('support.emptyTitle')}>
+                {t('support.emptyBody')}
               </Alert>
             ) : null}
 
             {daemonOffline ? (
-              <Alert tone="warn" title="Daemon unavailable">
-                A Monero node is required to build and broadcast transactions. Configure a reachable node in Settings.
+              <Alert tone="warn" title={t('support.daemonUnavailableTitle')}>
+                {t('support.daemonUnavailableBody')}
               </Alert>
             ) : null}
 
             {loadError ? (
-              <Alert tone="danger" title="Donation address unavailable">
+              <Alert tone="danger" title={t('support.addressUnavailable')}>
                 {loadError}
               </Alert>
             ) : null}
@@ -228,7 +224,7 @@ export function SupportPage({ onNavigate }: { onNavigate: (route: Route) => void
             {error ? (
               <Alert
                 tone="danger"
-                title={error.code === 'INSUFFICIENT_FUNDS' ? 'Not enough spendable balance' : 'Donation not created'}
+                title={error.code === 'INSUFFICIENT_FUNDS' ? t('support.insufficientFunds') : t('support.notCreated')}
               >
                 {error.message}
                 {error.hint ? <p className="mt-1 text-ink-dim">{error.hint}</p> : null}
@@ -243,14 +239,14 @@ export function SupportPage({ onNavigate }: { onNavigate: (route: Route) => void
               disabled={!canReview}
               icon={<SendIcon className="h-4 w-4" />}
             >
-              Review donation
+              {t('support.review')}
             </Button>
           </div>
         </Card>
 
         <div className="flex flex-col gap-4 lg:gap-5">
           <Card>
-            <CardHeader title="Donation address" description="XMR on the Monero mainnet" />
+            <CardHeader title={t('support.addressCardTitle')} description={t('support.addressCardDesc')} />
             <div className="px-5 py-5">
               {support === null && !loadError ? (
                 <div className="space-y-3">
@@ -264,23 +260,23 @@ export function SupportPage({ onNavigate }: { onNavigate: (route: Route) => void
           </Card>
 
           <Card>
-            <CardHeader title="What your support pays for" />
+            <CardHeader title={t('support.paysForTitle')} />
             <ul className="flex flex-col gap-2.5 px-5 py-4 text-[12px] leading-relaxed text-ink-muted">
               <li className="flex items-start gap-2">
                 <CheckCircle2 className="mt-0.5 h-3.5 w-3.5 shrink-0 text-ok/80" />
-                Time spent testing against a real node and real wallets before every release.
+                {t('support.pays1')}
               </li>
               <li className="flex items-start gap-2">
                 <CheckCircle2 className="mt-0.5 h-3.5 w-3.5 shrink-0 text-ok/80" />
-                Keeping the wallet compatible with new <span className="font-mono">monero-wallet-rpc</span> releases.
+                {t('support.pays2')}
               </li>
               <li className="flex items-start gap-2">
                 <CheckCircle2 className="mt-0.5 h-3.5 w-3.5 shrink-0 text-ok/80" />
-                Reviewing issues and pull requests from people who self-host it.
+                {t('support.pays3')}
               </li>
               <li className="flex items-start gap-2">
                 <Info className="mt-0.5 h-3.5 w-3.5 shrink-0 text-ink-dim" />
-                Nothing else: the project takes no cut of any transaction and has no other income.
+                {t('support.pays4')}
               </li>
             </ul>
           </Card>
@@ -290,15 +286,15 @@ export function SupportPage({ onNavigate }: { onNavigate: (route: Route) => void
       <Modal
         open={Boolean(prepared)}
         onClose={cancel}
-        title="Confirm donation"
-        description="Review the exact amount and fee before it is signed."
+        title={t('support.confirmTitle')}
+        description={t('support.confirmDesc')}
         footer={
           <>
             <Button variant="ghost" onClick={cancel} disabled={busy}>
-              Cancel
+              {t('common.cancel')}
             </Button>
             <Button variant="primary" onClick={() => void confirm()} loading={busy}>
-              Confirm &amp; Donate
+              {t('support.confirmDonate')}
             </Button>
           </>
         }
@@ -306,20 +302,20 @@ export function SupportPage({ onNavigate }: { onNavigate: (route: Route) => void
         {prepared ? (
           <div className="flex flex-col gap-4">
             <div className="divide-y divide-line-soft rounded-xl border border-line bg-surface-sunken px-4 py-1">
-              <Recap label="Developer address" value={shortenAddress(prepared.address, 18, 12)} mono />
-              <Recap label="Donation" value={`${formatXmr(prepared.amountAtomic)} XMR`} emphasis />
+              <Recap label={t('support.developerAddress')} value={shortenAddress(prepared.address, 18, 12)} mono />
+              <Recap label={t('support.donation')} value={`${formatXmr(prepared.amountAtomic)} XMR`} emphasis />
               <Recap
-                label={prepared.feeEstimated ? 'Estimated network fee' : 'Network fee'}
-                value={prepared.feeAtomic ? `${formatXmr(prepared.feeAtomic)} XMR` : 'Calculated at send time'}
+                label={prepared.feeEstimated ? t('support.estimatedFee') : t('support.networkFee')}
+                value={prepared.feeAtomic ? `${formatXmr(prepared.feeAtomic)} XMR` : t('support.feeCalculatedLater')}
               />
-              <Recap label="Commission taken by this wallet" value="None" />
+              <Recap label={t('support.commissionNone')} value={t('support.none')} />
               <Recap
-                label="Total leaving your wallet"
-                value={prepared.totalAtomic ? `${formatXmr(prepared.totalAtomic)} XMR` : '—'}
+                label={t('support.totalLeaving')}
+                value={prepared.totalAtomic ? `${formatXmr(prepared.totalAtomic)} XMR` : t('common.emDash')}
               />
             </div>
             <Alert tone="info">
-              Thank you. Support is voluntary and non-refundable — Monero transfers cannot be reversed.
+              {t('support.confirmInfo')}
             </Alert>
           </div>
         ) : null}
@@ -329,8 +325,9 @@ export function SupportPage({ onNavigate }: { onNavigate: (route: Route) => void
 }
 
 function AddressBlock({ address }: { address: string }) {
+  const { t } = useI18n();
   if (address.length === 0) {
-    return <p className="text-[12.5px] text-ink-muted">The donation address is configured on the backend.</p>;
+    return <p className="text-[12.5px] text-ink-muted">{t('support.addressConfiguredBackend')}</p>;
   }
   return (
     <div className="flex flex-col gap-4">
@@ -350,9 +347,9 @@ function AddressBlock({ address }: { address: string }) {
       <div className="rounded-xl border border-line bg-surface-sunken p-4">
         <p className="mono-address text-ink">{address}</p>
       </div>
-      <CopyButton value={address} label="Copy Address" variant="secondary" />
+      <CopyButton value={address} label={t('support.copyAddress')} variant="secondary" />
       <Alert tone="info">
-        Send XMR on the Monero mainnet only — anything else cannot be recovered, and donations are not refundable.
+        {t('support.mainnetOnly')}
       </Alert>
     </div>
   );

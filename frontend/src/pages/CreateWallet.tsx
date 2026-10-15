@@ -5,8 +5,10 @@ import { ApiError, api } from '../api/client';
 import { MoneroLogo } from '../components/MoneroLogo';
 import { Alert, Button, Card, CopyButton, Input } from '../components/ui';
 import type { CreatedWallet } from '../api/types';
+import { useI18n } from '../i18n/I18nProvider';
 
 export function CreateWalletPage({ onDone, onBack }: { onDone: () => void; onBack: () => void }) {
+  const { t } = useI18n();
   const [name, setName] = useState('');
   const [password, setPassword] = useState('');
   const [confirm, setConfirm] = useState('');
@@ -46,32 +48,32 @@ export function CreateWalletPage({ onDone, onBack }: { onDone: () => void; onBac
               <Check className="h-5 w-5 text-ok" />
             </span>
             <div>
-              <h1 className="text-[18px] font-semibold tracking-tight text-ink">Wallet created successfully</h1>
-              <p className="text-[12.5px] text-ink-muted">“{created.wallet.name}” is now open and ready to receive XMR.</p>
+              <h1 className="text-[18px] font-semibold tracking-tight text-ink">{t('create.successTitle')}</h1>
+              <p className="text-[12.5px] text-ink-muted">{t('create.successSubtitle', { name: created.wallet.name })}</p>
             </div>
           </div>
 
           <div className="mt-6">
-            <p className="label-caps">Address</p>
+            <p className="label-caps">{t('create.address')}</p>
             <div className="mt-2 flex flex-col gap-3 rounded-xl border border-line bg-surface-sunken p-4">
               <p className="mono-address text-ink">{created.wallet.address}</p>
               <div className="flex flex-wrap gap-2">
-                <CopyButton value={created.wallet.address} label="Copy Address" variant="secondary" />
-                <StatusBadge label={created.network || 'mainnet'} />
+                <CopyButton value={created.wallet.address} label={t('create.copyAddress')} variant="secondary" />
+                <StatusBadge label={created.network || t('common.mainnet')} />
               </div>
             </div>
           </div>
 
           <div className="mt-6">
             <div className="flex items-center justify-between gap-3">
-              <p className="label-caps">Recovery phrase</p>
+              <p className="label-caps">{t('create.recoveryPhrase')}</p>
               <Button
                 size="sm"
                 variant="ghost"
                 onClick={() => setPhraseVisible((current) => !current)}
                 icon={phraseVisible ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
               >
-                {phraseVisible ? 'Hide' : 'Reveal'}
+                {phraseVisible ? t('common.hide') : t('common.reveal')}
               </Button>
             </div>
             <div className="relative mt-2 rounded-xl border border-line bg-surface-sunken p-4">
@@ -86,25 +88,30 @@ export function CreateWalletPage({ onDone, onBack }: { onDone: () => void; onBac
                 </ol>
               ) : (
                 <p className="select-none py-6 text-center text-[12.5px] text-ink-dim">
-                  The {words.length || 25} words are hidden. Reveal them only when nobody can see your screen.
+                  {t('create.phraseHidden', { count: words.length || 25 })}
                 </p>
               )}
             </div>
           </div>
 
-          <Alert tone="warn" title="Write down your recovery phrase." className="mt-4">
-            Anyone with this phrase can access your funds. Store it offline — it is shown here only while you create or back up the wallet.
+          <Alert tone="warn" title={t('create.writeDownTitle')} className="mt-4">
+            {t('create.writeDownBody')}
           </Alert>
 
           <div className="mt-5 flex flex-col gap-2 sm:flex-row sm:flex-wrap">
-            <CopyButton value={created.wallet.address} label="Copy Address" variant="secondary" />
-            <CopyButton value={created.recoveryPhrase} label="Copy Recovery Phrase" variant="secondary" disabled={!phraseVisible} />
+            <CopyButton value={created.wallet.address} label={t('create.copyAddress')} variant="secondary" />
+            <CopyButton
+              value={created.recoveryPhrase}
+              label={t('create.copyPhrase')}
+              variant="secondary"
+              disabled={!phraseVisible}
+            />
             <Button variant="primary" className="w-full sm:ml-auto sm:w-auto" onClick={onDone}>
-              Continue
+              {t('common.continue')}
             </Button>
           </div>
           {!phraseVisible ? (
-            <p className="mt-2 text-right text-[11.5px] text-ink-faint">Reveal the phrase to enable copying it.</p>
+            <p className="mt-2 text-right text-[11.5px] text-ink-faint">{t('create.revealToCopy')}</p>
           ) : null}
         </Card>
       </div>
@@ -120,53 +127,53 @@ export function CreateWalletPage({ onDone, onBack }: { onDone: () => void; onBac
           className="inline-flex items-center gap-1.5 text-[12.5px] text-ink-dim transition hover:text-ink"
         >
           <ArrowLeft className="h-3.5 w-3.5" />
-          Back
+          {t('common.back')}
         </button>
 
         <div className="mt-5 flex items-center gap-3">
           <MoneroLogo className="h-8 w-8 text-accent" />
           <div>
-            <h1 className="text-[18px] font-semibold tracking-tight text-ink">Create a new wallet</h1>
-            <p className="text-[12.5px] text-ink-muted">A new wallet file is generated by monero-wallet-rpc on this computer.</p>
+            <h1 className="text-[18px] font-semibold tracking-tight text-ink">{t('create.title')}</h1>
+            <p className="text-[12.5px] text-ink-muted">{t('create.subtitle')}</p>
           </div>
         </div>
 
         <div className="mt-6 flex flex-col gap-4">
           <Input
-            label="Wallet name"
+            label={t('create.walletName')}
             value={name}
             autoFocus
             onChange={(event) => setName(event.target.value.replace(/[^A-Za-z0-9._-]/g, ''))}
             placeholder="main"
-            hint="Used as the wallet file name in the wallet directory."
-            error={name.length > 0 && !nameValid ? 'Allowed characters: letters, digits, dot, dash, underscore.' : undefined}
+            hint={t('create.nameHint')}
+            error={name.length > 0 && !nameValid ? t('create.nameError') : undefined}
           />
           <Input
-            label="Password"
+            label={t('create.password')}
             type={showPassword ? 'text' : 'password'}
             value={password}
             onChange={(event) => setPassword(event.target.value)}
-            placeholder="At least 8 characters"
-            hint="The password encrypts the wallet file. It is never stored in the browser or in logs."
-            error={password.length > 0 && !passwordValid ? 'Use at least 8 characters.' : undefined}
+            placeholder={t('create.passwordPlaceholder')}
+            hint={t('create.passwordHint')}
+            error={password.length > 0 && !passwordValid ? t('create.passwordError') : undefined}
             suffix={
               <button
                 type="button"
                 onClick={() => setShowPassword((current) => !current)}
                 className="rounded-md p-1 text-ink-dim transition hover:text-ink"
-                aria-label={showPassword ? 'Hide password' : 'Show password'}
+                aria-label={showPassword ? t('create.hidePassword') : t('create.showPassword')}
               >
                 {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
               </button>
             }
           />
           <Input
-            label="Confirm password"
+            label={t('create.confirmPassword')}
             type={showPassword ? 'text' : 'password'}
             value={confirm}
             onChange={(event) => setConfirm(event.target.value)}
-            placeholder="Repeat the password"
-            error={confirm.length > 0 && !matches ? 'Passwords do not match.' : undefined}
+            placeholder={t('create.confirmPlaceholder')}
+            error={confirm.length > 0 && !matches ? t('create.passwordMismatch') : undefined}
             onKeyDown={(event) => {
               if (event.key === 'Enter' && nameValid && passwordValid && matches && !busy) void submit();
             }}
@@ -174,7 +181,7 @@ export function CreateWalletPage({ onDone, onBack }: { onDone: () => void; onBac
         </div>
 
         {error ? (
-          <Alert tone="danger" title="Could not create the wallet" className="mt-4">
+          <Alert tone="danger" title={t('create.failedTitle')} className="mt-4">
             {error.message}
             {error.hint ? <p className="mt-1 text-ink-dim">{error.hint}</p> : null}
           </Alert>
@@ -183,7 +190,7 @@ export function CreateWalletPage({ onDone, onBack }: { onDone: () => void; onBac
         <Alert tone="info" className="mt-4">
           <span className="flex items-start gap-2">
             <ShieldAlert className="mt-0.5 h-3.5 w-3.5 text-ink-dim" />
-            <span>You will get a 25 word recovery phrase after the wallet is created. Write it down before you send funds.</span>
+            <span>{t('create.seedInfo')}</span>
           </span>
         </Alert>
 
@@ -195,7 +202,7 @@ export function CreateWalletPage({ onDone, onBack }: { onDone: () => void; onBac
           loading={busy}
           disabled={!nameValid || !passwordValid || !matches}
         >
-          Create Wallet
+          {t('create.submit')}
         </Button>
       </Card>
     </div>
